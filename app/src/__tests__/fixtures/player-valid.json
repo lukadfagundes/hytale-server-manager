@@ -1,0 +1,100 @@
+{
+  "Components": {
+    "Nameplate": {
+      "Text": "XxDandelionxX"
+    },
+    "Player": {
+      "GameMode": "Survival",
+      "PlayerData": {
+        "World": "default",
+        "DiscoveredZones": [
+          "server.map.region.Zone1_Tier1",
+          "server.map.region.Zone2_Tier1",
+          "server.map.region.Zone3_Tier1"
+        ],
+        "PerWorldData": {
+          "default": {
+            "RespawnPoints": [
+              {
+                "RespawnPosition": { "X": 100, "Y": 64, "Z": -200 }
+              }
+            ],
+            "DeathPositions": [
+              {
+                "Position": { "X": 150.5, "Y": 40, "Z": -180.3 },
+                "Day": 12
+              }
+            ]
+          }
+        }
+      },
+      "Inventory": {
+        "ActiveHotbarSlot": 2,
+        "Storage": {
+          "Items": {
+            "0": { "Id": "Weapon_Daggers_Adamantite", "Quantity": 1, "Durability": 85.5, "MaxDurability": 100 },
+            "5": { "Id": "Food_Apple", "Quantity": 12, "Durability": 0, "MaxDurability": 0 }
+          }
+        },
+        "HotBar": {
+          "Items": {
+            "0": { "Id": "Tool_Pickaxe_Iron", "Quantity": 1, "Durability": 45, "MaxDurability": 200 }
+          }
+        },
+        "Backpack": { "Items": {} },
+        "Utility": { "Items": {} },
+        "Tool": { "Items": {} },
+        "Armor": {
+          "Items": {
+            "0": { "Id": "Armor_Cobalt_Head", "Quantity": 1, "Durability": 90, "MaxDurability": 120 },
+            "1": { "Id": "Armor_Cobalt_Chest", "Quantity": 1, "Durability": 110, "MaxDurability": 150 },
+            "2": { "Id": "Armor_Cobalt_Hands", "Quantity": 1, "Durability": 60, "MaxDurability": 80 },
+            "3": { "Id": "Armor_Cobalt_Legs", "Quantity": 1, "Durability": 75, "MaxDurability": 100 }
+          }
+        }
+      }
+    },
+    "Transform": {
+      "Position": { "X": 123.456, "Y": 78.9, "Z": -42.1 }
+    },
+    "EntityStats": {
+      "Stats": {
+        "Health": {
+          "Value": 85.5,
+          "Modifiers": {
+            "ArmorBonus": { "Amount": 10 },
+            "FoodBuff": { "Amount": 5 }
+          }
+        },
+        "Stamina": { "Value": 100 },
+        "Mana": { "Value": 50, "Modifiers": {} },
+        "Oxygen": { "Value": 100, "Modifiers": {} }
+      }
+    },
+    "PlayerMemories": {
+      "Memories": [
+        {
+          "NPCRole": "Goblin_Hermit",
+          "TranslationKey": "server.npcRoles.Goblin_Hermit.name",
+          "FoundLocationNameKey": "server.map.region.Zone1_Tier1",
+          "CapturedTimestamp": 1707750000000,
+          "IsMemoriesNameOverridden": false
+        },
+        {
+          "NPCRole": "Pufferfish",
+          "TranslationKey": "server.npcRoles.Pufferfish.name",
+          "FoundLocationNameKey": "server.map.region.Zone2_Tier1",
+          "CapturedTimestamp": 1707850000000,
+          "IsMemoriesNameOverridden": true
+        },
+        {
+          "NPCRole": "Merchant_Trader",
+          "TranslationKey": "server.npcRoles.Merchant_Trader.name",
+          "FoundLocationNameKey": "server.map.region.Zone3_Tier1",
+          "CapturedTimestamp": 1707950000000,
+          "IsMemoriesNameOverridden": false
+        }
+      ]
+    }
+  }
+}

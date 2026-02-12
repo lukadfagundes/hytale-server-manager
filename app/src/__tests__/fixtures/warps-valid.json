@@ -1,0 +1,24 @@
+{
+  "Warps": [
+    {
+      "Id": "spawn",
+      "World": "default",
+      "Creator": "XxDandelionxX",
+      "CreationDate": "2026-01-15T10:30:00Z",
+      "X": 100.5,
+      "Y": 64.0,
+      "Z": -200.3,
+      "Yaw": 90.0
+    },
+    {
+      "Id": "dungeon_entrance",
+      "World": "nether",
+      "Creator": "XxWishKeeperxX",
+      "CreationDate": "2026-02-01T14:15:00Z",
+      "X": -500.0,
+      "Y": 30.0,
+      "Z": 800.5,
+      "Yaw": 180.0
+    }
+  ]
+}

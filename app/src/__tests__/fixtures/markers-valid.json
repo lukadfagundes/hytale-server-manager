@@ -1,0 +1,9 @@
+{
+  "Markers": {
+    "forgotten_temple_01": {
+      "Name": "server.map.markers.Forgotten_Temple.name",
+      "Icon": "temple_icon",
+      "Position": { "X": 250.0, "Y": 55.0, "Z": -150.0 }
+    }
+  }
+}

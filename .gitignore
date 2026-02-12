@@ -33,6 +33,7 @@ app/node_modules/
 app/dist/
 app/out/
 app/disabled-mods/
+app/coverage/
 
 # OS files
 .DS_Store

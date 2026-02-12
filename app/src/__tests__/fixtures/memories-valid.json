@@ -1,0 +1,25 @@
+{
+  "Memories": [
+    {
+      "NPCRole": "Goblin_Hermit",
+      "TranslationKey": "server.npcRoles.Goblin_Hermit.name",
+      "FoundLocationNameKey": "server.map.region.Zone1_Tier1",
+      "CapturedTimestamp": 1707750000000,
+      "IsMemoriesNameOverridden": false
+    },
+    {
+      "NPCRole": "Pufferfish",
+      "TranslationKey": "server.npcRoles.Pufferfish.name",
+      "FoundLocationNameKey": "server.map.region.Zone2_Tier1",
+      "CapturedTimestamp": 1707850000000,
+      "IsMemoriesNameOverridden": true
+    },
+    {
+      "NPCRole": "Merchant_Trader",
+      "TranslationKey": "server.npcRoles.Merchant_Trader.name",
+      "FoundLocationNameKey": "server.map.region.Zone3_Tier1",
+      "CapturedTimestamp": 1707950000000,
+      "IsMemoriesNameOverridden": false
+    }
+  ]
+}

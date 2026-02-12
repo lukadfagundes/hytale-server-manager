@@ -11,6 +11,8 @@
     "build": "cd app && npm run build",
     "package": "cd app && npm run package",
     "typecheck": "cd app && npm run typecheck",
+    "test": "cd app && npm test",
+    "test:coverage": "cd app && npm run test:coverage",
     "postinstall": "cd app && npm install"
   }
 }
