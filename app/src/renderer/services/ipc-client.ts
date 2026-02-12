@@ -13,6 +13,11 @@ declare global {
   }
 }
 
+export interface DataResult<T> {
+  data: T;
+  errors: string[];
+}
+
 export async function startServer(): Promise<void> {
   await window.electronAPI.invoke('server:start');
 }
@@ -21,28 +26,36 @@ export async function stopServer(): Promise<void> {
   await window.electronAPI.invoke('server:stop');
 }
 
-export async function getPlayers(): Promise<PlayerData[]> {
-  return (await window.electronAPI.invoke('data:players')) as PlayerData[];
+export async function getPlayers(): Promise<DataResult<PlayerData[]>> {
+  const result = (await window.electronAPI.invoke('data:players')) as { data: PlayerData[]; errors: string[] };
+  return { data: result.data, errors: result.errors };
 }
 
-export async function getMemories(): Promise<{ global: Memory[]; perPlayer: Record<string, Memory[]> }> {
-  return (await window.electronAPI.invoke('data:memories')) as { global: Memory[]; perPlayer: Record<string, Memory[]> };
+export async function getMemories(): Promise<DataResult<{ global: Memory[]; perPlayer: Record<string, Memory[]> }>> {
+  const result = (await window.electronAPI.invoke('data:memories')) as {
+    data: { global: Memory[]; perPlayer: Record<string, Memory[]> };
+    errors: string[];
+  };
+  return { data: result.data, errors: result.errors };
 }
 
-export async function getWarps(): Promise<Warp[]> {
-  return (await window.electronAPI.invoke('data:warps')) as Warp[];
+export async function getWarps(): Promise<DataResult<Warp[]>> {
+  const result = (await window.electronAPI.invoke('data:warps')) as { data: Warp[]; error: string | null };
+  return { data: result.data, errors: result.error ? [result.error] : [] };
 }
 
-export async function getWorldMap(): Promise<WorldMapData> {
-  return (await window.electronAPI.invoke('data:world-map')) as WorldMapData;
+export async function getWorldMap(): Promise<DataResult<WorldMapData>> {
+  const result = (await window.electronAPI.invoke('data:world-map')) as { data: WorldMapData; errors: string[] };
+  return { data: result.data, errors: result.errors };
 }
 
 export async function getServerConfig(): Promise<Record<string, unknown>> {
   return (await window.electronAPI.invoke('data:server-config')) as Record<string, unknown>;
 }
 
-export async function getMods(): Promise<ModInfo[]> {
-  return (await window.electronAPI.invoke('mods:list')) as ModInfo[];
+export async function getMods(): Promise<DataResult<ModInfo[]>> {
+  const result = (await window.electronAPI.invoke('mods:list')) as { data: ModInfo[]; errors: string[] };
+  return { data: result.data, errors: result.errors };
 }
 
 export async function toggleMod(modName: string, enabled: boolean): Promise<void> {

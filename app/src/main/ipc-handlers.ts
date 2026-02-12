@@ -20,45 +20,60 @@ function getDisabledModsDir(): string {
 
 export function registerIpcHandlers(): void {
   ipcMain.handle(IPC.SERVER_START, async () => {
-    await serverProcess.start();
+    try {
+      await serverProcess.start();
+    } catch (err) {
+      throw new Error((err as Error).message);
+    }
   });
 
   ipcMain.handle(IPC.SERVER_STOP, async () => {
-    await serverProcess.stop();
+    try {
+      await serverProcess.stop();
+    } catch (err) {
+      throw new Error((err as Error).message);
+    }
   });
 
   ipcMain.handle(IPC.DATA_PLAYERS, async () => {
-    return readAllPlayers(getServerDir());
+    const result = readAllPlayers(getServerDir());
+    return { data: result.data, errors: result.errors };
   });
 
   ipcMain.handle(IPC.DATA_MEMORIES, async () => {
+    const globalResult = readGlobalMemories(getServerDir());
+    const perPlayer = readPlayerMemories(getServerDir());
+    const errors: string[] = [];
+    if (globalResult.error) errors.push(globalResult.error);
     return {
-      global: readGlobalMemories(getServerDir()),
-      perPlayer: readPlayerMemories(getServerDir()),
+      data: { global: globalResult.data, perPlayer },
+      errors,
     };
   });
 
   ipcMain.handle(IPC.DATA_WARPS, async () => {
-    return readWarps(getServerDir());
+    const result = readWarps(getServerDir());
+    return { data: result.data, error: result.error };
   });
 
   ipcMain.handle(IPC.DATA_WORLD_MAP, async () => {
-    const players = readAllPlayers(getServerDir());
-    const warps = readWarps(getServerDir());
+    const playersResult = readAllPlayers(getServerDir());
+    const warpsResult = readWarps(getServerDir());
 
-    const playerPositions = players.map(p => ({
+    const playerPositions = playersResult.data.map(p => ({
       name: p.name,
       position: p.position,
     }));
 
-    const warpPositions = warps
+    const warpPositions = warpsResult.data
       .filter(w => w.world === 'default')
       .map(w => ({
         name: w.id,
         position: w.position,
       }));
 
-    return readWorldMap(getServerDir(), playerPositions, warpPositions);
+    const result = readWorldMap(getServerDir(), playerPositions, warpPositions);
+    return { data: result.data, errors: result.errors };
   });
 
   ipcMain.handle(IPC.DATA_SERVER_CONFIG, async () => {
@@ -72,10 +87,15 @@ export function registerIpcHandlers(): void {
   });
 
   ipcMain.handle(IPC.MODS_LIST, async () => {
-    return readAllMods(getServerDir(), getDisabledModsDir());
+    const result = readAllMods(getServerDir(), getDisabledModsDir());
+    return { data: result.data, errors: result.errors };
   });
 
   ipcMain.handle(IPC.MODS_TOGGLE, async (_event, args: { modName: string; enabled: boolean }) => {
-    toggleMod(getServerDir(), getDisabledModsDir(), args.modName, args.enabled);
+    try {
+      toggleMod(getServerDir(), getDisabledModsDir(), args.modName, args.enabled);
+    } catch (err) {
+      throw new Error((err as Error).message);
+    }
   });
 }

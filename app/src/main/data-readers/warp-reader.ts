@@ -10,7 +10,12 @@ export interface Warp {
   yaw: number;
 }
 
-export function readWarps(serverDir: string): Warp[] {
+export interface WarpsResult {
+  data: Warp[];
+  error: string | null;
+}
+
+export function readWarps(serverDir: string): WarpsResult {
   const filePath = path.join(serverDir, 'universe', 'warps.json');
 
   try {
@@ -19,7 +24,7 @@ export function readWarps(serverDir: string): Warp[] {
     const warps = data.Warps ?? [];
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return warps.map((w: any) => ({
+    const parsed: Warp[] = warps.map((w: any) => ({
       id: w.Id ?? '',
       world: w.World ?? '',
       creator: w.Creator ?? '',
@@ -27,8 +32,16 @@ export function readWarps(serverDir: string): Warp[] {
       position: { x: w.X ?? 0, y: w.Y ?? 0, z: w.Z ?? 0 },
       yaw: w.Yaw ?? 0,
     }));
-  } catch {
-    console.error('Failed to read warps.json');
-    return [];
+
+    return { data: parsed, error: null };
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code;
+    if (code === 'ENOENT') {
+      return { data: [], error: null };
+    }
+    const msg = err instanceof SyntaxError
+      ? `Failed to parse warps.json: ${err.message}`
+      : `Failed to read warps.json: ${(err as Error).message}`;
+    return { data: [], error: msg };
   }
 }

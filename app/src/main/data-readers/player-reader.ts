@@ -39,6 +39,11 @@ export interface PlayerData {
   }[];
 }
 
+export interface PlayersResult {
+  data: PlayerData[];
+  errors: string[];
+}
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 function parseItem(raw: any): { id: string; quantity: number; durability: number; maxDurability: number } {
@@ -102,7 +107,6 @@ function parsePlayer(filename: string, raw: any): PlayerData {
   const pos = transform.Position ?? {};
   const position = { x: pos.X ?? 0, y: pos.Y ?? 0, z: pos.Z ?? 0 };
 
-  // Parse armor: slots 0=Head, 1=Chest, 2=Hands, 3=Legs
   const armorItems = inv.Armor?.Items ?? {};
   const armor: PlayerData['armor'] = [
     armorItems['0'] ? parseItem(armorItems['0']) : null,
@@ -111,7 +115,6 @@ function parsePlayer(filename: string, raw: any): PlayerData {
     armorItems['3'] ? parseItem(armorItems['3']) : null,
   ];
 
-  // Parse respawn points from all worlds
   const respawnPoints: PlayerData['respawnPoints'] = [];
   const deathMarkers: PlayerData['deathMarkers'] = [];
   const perWorldData = playerData.PerWorldData ?? {};
@@ -164,9 +167,10 @@ function parsePlayer(filename: string, raw: any): PlayerData {
   };
 }
 
-export function readAllPlayers(serverDir: string): PlayerData[] {
+export function readAllPlayers(serverDir: string): PlayersResult {
   const playersDir = path.join(serverDir, 'universe', 'players');
   const players: PlayerData[] = [];
+  const errors: string[] = [];
 
   try {
     const files = fs.readdirSync(playersDir);
@@ -176,19 +180,27 @@ export function readAllPlayers(serverDir: string): PlayerData[] {
         const content = fs.readFileSync(path.join(playersDir, file), 'utf-8');
         const data = JSON.parse(content);
         players.push(parsePlayer(file, data));
-      } catch {
-        console.error(`Failed to parse player file: ${file}`);
+      } catch (err) {
+        const msg = err instanceof SyntaxError
+          ? `Failed to parse ${file}: ${err.message}`
+          : `Failed to read ${file}: ${(err as Error).message}`;
+        errors.push(msg);
       }
     }
-  } catch {
-    console.error('Failed to read players directory');
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code;
+    if (code === 'ENOENT') {
+      errors.push('Players directory not found: Server/universe/players/');
+    } else {
+      errors.push(`Failed to read players directory: ${(err as Error).message}`);
+    }
   }
 
-  return players;
+  return { data: players, errors };
 }
 
 export function readPlayerMemories(serverDir: string): Record<string, PlayerData['memories']> {
-  const players = readAllPlayers(serverDir);
+  const { data: players } = readAllPlayers(serverDir);
   const result: Record<string, PlayerData['memories']> = {};
   for (const player of players) {
     if (player.memories.length > 0) {

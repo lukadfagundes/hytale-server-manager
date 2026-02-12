@@ -23,6 +23,11 @@ export interface WorldMapData {
   bounds: { minX: number; maxX: number; minZ: number; maxZ: number };
 }
 
+export interface WorldMapResult {
+  data: WorldMapData;
+  errors: string[];
+}
+
 function formatTranslationKey(key: string): string {
   const parts = key.split('.');
   const meaningful = parts.length >= 3 ? parts[parts.length - 2] : parts[parts.length - 1];
@@ -33,11 +38,12 @@ export function readWorldMap(
   serverDir: string,
   playerPositions: { name: string; position: { x: number; y: number; z: number } }[],
   warpPositions: { name: string; position: { x: number; y: number; z: number } }[],
-): WorldMapData {
+): WorldMapResult {
   const chunksDir = path.join(serverDir, 'universe', 'worlds', 'default', 'chunks');
   const markersPath = path.join(serverDir, 'universe', 'worlds', 'default', 'resources', 'BlockMapMarkers.json');
 
   const regions: RegionInfo[] = [];
+  const errors: string[] = [];
   let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
 
   // Read region files
@@ -45,7 +51,6 @@ export function readWorldMap(
     const files = fs.readdirSync(chunksDir);
     for (const file of files) {
       if (!file.endsWith('.region.bin')) continue;
-      // Parse filename: "X.Z.region.bin"
       const parts = file.split('.');
       if (parts.length < 4) continue;
       const x = parseInt(parts[0], 10);
@@ -67,8 +72,11 @@ export function readWorldMap(
         // Skip files we can't stat
       }
     }
-  } catch {
-    console.error('Failed to read chunks directory');
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code;
+    if (code !== 'ENOENT') {
+      errors.push(`Failed to read chunks directory: ${(err as Error).message}`);
+    }
   }
 
   // Read map markers
@@ -91,8 +99,11 @@ export function readWorldMap(
         },
       });
     }
-  } catch {
-    // BlockMapMarkers.json may not exist
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code;
+    if (code !== 'ENOENT') {
+      errors.push(`Failed to read BlockMapMarkers.json: ${(err as Error).message}`);
+    }
   }
 
   if (regions.length === 0) {
@@ -100,10 +111,13 @@ export function readWorldMap(
   }
 
   return {
-    regions,
-    markers,
-    playerPositions,
-    warpPositions,
-    bounds: { minX, maxX, minZ, maxZ },
+    data: {
+      regions,
+      markers,
+      playerPositions,
+      warpPositions,
+      bounds: { minX, maxX, minZ, maxZ },
+    },
+    errors,
   };
 }

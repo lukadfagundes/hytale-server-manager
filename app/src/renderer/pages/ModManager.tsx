@@ -4,7 +4,7 @@ import { useServerStore } from '../stores/server-store';
 import ModCard from '../components/mods/ModCard';
 
 export default function ModManager() {
-  const { mods, loading, fetchMods, toggleMod } = useModStore();
+  const { mods, loading, error, fetchMods, toggleMod } = useModStore();
   const serverStatus = useServerStore((s) => s.status);
   const isServerRunning = serverStatus === 'running' || serverStatus === 'starting';
 
@@ -25,10 +25,16 @@ export default function ModManager() {
         </div>
       )}
 
+      {error && (
+        <div className="bg-red-900/20 border border-red-500/30 rounded-lg px-4 py-3 text-sm text-red-300">
+          {error}
+        </div>
+      )}
+
       {loading ? (
         <p className="text-hytale-muted">Loading mods...</p>
       ) : mods.length === 0 ? (
-        <p className="text-hytale-muted">No mods found.</p>
+        <p className="text-hytale-muted">No mods installed.</p>
       ) : (
         <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
           {mods.map((mod) => (

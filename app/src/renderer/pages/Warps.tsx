@@ -5,12 +5,14 @@ import WarpCard from '../components/warps/WarpCard';
 type SortMode = 'name' | 'date';
 
 export default function Warps() {
-  const { warps, loading, fetchWarps } = useUniverseStore();
+  const { warps, loading, errors, fetchWarps } = useUniverseStore();
   const [sort, setSort] = useState<SortMode>('name');
 
   useEffect(() => {
     fetchWarps();
   }, [fetchWarps]);
+
+  const warpErrors = errors.warps ?? [];
 
   const sorted = [...warps].sort((a, b) => {
     if (sort === 'date') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
@@ -34,10 +36,18 @@ export default function Warps() {
         </div>
       </div>
 
+      {warpErrors.length > 0 && (
+        <div className="bg-red-900/20 border border-red-500/30 rounded-lg px-4 py-3 text-sm text-red-300 space-y-1">
+          {warpErrors.map((err, i) => (
+            <p key={i}>{err}</p>
+          ))}
+        </div>
+      )}
+
       {loading.warps ? (
         <p className="text-hytale-muted">Loading warps...</p>
       ) : warps.length === 0 ? (
-        <p className="text-hytale-muted">No warps found.</p>
+        <p className="text-hytale-muted">No warps created yet.</p>
       ) : (
         <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
           {sorted.map((warp) => (

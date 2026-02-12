@@ -1,6 +1,7 @@
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
+import ToastContainer from './components/layout/ToastContainer';
 import Dashboard from './pages/Dashboard';
 import ModManager from './pages/ModManager';
 import Players from './pages/Players';
@@ -26,6 +27,7 @@ export default function App() {
             </Routes>
           </main>
         </div>
+        <ToastContainer />
       </div>
     </HashRouter>
   );

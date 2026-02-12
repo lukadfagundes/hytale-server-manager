@@ -15,23 +15,27 @@ export function toggleMod(
     fs.mkdirSync(disabledModsDir, { recursive: true });
   }
 
-  if (enabled) {
-    // Move from disabled-mods → Server/mods/
-    if (!fs.existsSync(disabledPath)) {
-      throw new Error(`Disabled mod not found: ${modName}`);
+  const src = enabled ? disabledPath : enabledPath;
+  const dst = enabled ? enabledPath : disabledPath;
+  const action = enabled ? 'enable' : 'disable';
+
+  if (!fs.existsSync(src)) {
+    throw new Error(`Cannot ${action} "${modName}": mod directory not found at expected location`);
+  }
+  if (fs.existsSync(dst)) {
+    throw new Error(`Cannot ${action} "${modName}": directory already exists at destination`);
+  }
+
+  try {
+    fs.renameSync(src, dst);
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code;
+    if (code === 'EACCES' || code === 'EPERM') {
+      throw new Error(`Permission denied: cannot ${action} "${modName}". Check file permissions for: ${src}`);
     }
-    if (fs.existsSync(enabledPath)) {
-      throw new Error(`Mod already exists in Server/mods/: ${modName}`);
+    if (code === 'EBUSY') {
+      throw new Error(`Directory is locked: cannot ${action} "${modName}". Is the server running?`);
     }
-    fs.renameSync(disabledPath, enabledPath);
-  } else {
-    // Move from Server/mods/ → disabled-mods/
-    if (!fs.existsSync(enabledPath)) {
-      throw new Error(`Enabled mod not found: ${modName}`);
-    }
-    if (fs.existsSync(disabledPath)) {
-      throw new Error(`Mod already exists in disabled-mods/: ${modName}`);
-    }
-    fs.renameSync(enabledPath, disabledPath);
+    throw new Error(`Failed to ${action} "${modName}": ${(err as Error).message}`);
   }
 }

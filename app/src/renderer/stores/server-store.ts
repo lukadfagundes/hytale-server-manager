@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { startServer, stopServer, onServerStatusChanged, onServerLog } from '../services/ipc-client';
+import { useToastStore } from './toast-store';
 
 type ServerStatus = 'stopped' | 'starting' | 'running' | 'stopping';
 
@@ -27,14 +28,16 @@ export const useServerStore = create<ServerStore>((set) => ({
     try {
       await startServer();
     } catch (err) {
-      console.error('Failed to start server:', err);
+      const msg = (err as Error).message || String(err);
+      useToastStore.getState().addToast(`Failed to start server: ${msg}`, 'error');
     }
   },
   stop: async () => {
     try {
       await stopServer();
     } catch (err) {
-      console.error('Failed to stop server:', err);
+      const msg = (err as Error).message || String(err);
+      useToastStore.getState().addToast(`Failed to stop server: ${msg}`, 'error');
     }
   },
   clearLogs: () => set({ logs: [] }),

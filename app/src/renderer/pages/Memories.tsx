@@ -5,7 +5,7 @@ import MemoryCard from '../components/memories/MemoryCard';
 type SortMode = 'newest' | 'oldest' | 'name';
 
 export default function Memories() {
-  const { memories, loading, fetchMemories } = useUniverseStore();
+  const { memories, loading, errors, fetchMemories } = useUniverseStore();
   const [activeTab, setActiveTab] = useState<string>('global');
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortMode>('newest');
@@ -15,6 +15,7 @@ export default function Memories() {
   }, [fetchMemories]);
 
   const playerNames = Object.keys(memories.perPlayer);
+  const memoryErrors = errors.memories ?? [];
 
   const activeMemories = useMemo(() => {
     const list = activeTab === 'global' ? memories.global : (memories.perPlayer[activeTab] ?? []);
@@ -38,6 +39,14 @@ export default function Memories() {
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold">Memories</h1>
+
+      {memoryErrors.length > 0 && (
+        <div className="bg-red-900/20 border border-red-500/30 rounded-lg px-4 py-3 text-sm text-red-300 space-y-1">
+          {memoryErrors.map((err, i) => (
+            <p key={i}>{err}</p>
+          ))}
+        </div>
+      )}
 
       {loading.memories ? (
         <p className="text-hytale-muted">Loading memories...</p>
@@ -95,7 +104,7 @@ export default function Memories() {
 
           {/* Grid */}
           {activeMemories.length === 0 ? (
-            <p className="text-hytale-muted">No memories found.</p>
+            <p className="text-hytale-muted">No memories recorded yet.</p>
           ) : (
             <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {activeMemories.map((memory, i) => (

@@ -9,6 +9,11 @@ export interface ModInfo {
   sizeBytes: number;
 }
 
+export interface ModsResult {
+  data: ModInfo[];
+  errors: string[];
+}
+
 function getDirSize(dirPath: string): number {
   let size = 0;
   try {
@@ -27,7 +32,7 @@ function getDirSize(dirPath: string): number {
   return size;
 }
 
-function scanModsDir(modsDir: string, enabled: boolean): ModInfo[] {
+function scanModsDir(modsDir: string, enabled: boolean): { mods: ModInfo[]; error: string | null } {
   const mods: ModInfo[] = [];
 
   try {
@@ -36,7 +41,6 @@ function scanModsDir(modsDir: string, enabled: boolean): ModInfo[] {
       if (!entry.isDirectory()) continue;
       const modPath = path.join(modsDir, entry.name);
 
-      // Check for a state JSON file inside the mod directory
       let hasStateFile = false;
       try {
         const modFiles = fs.readdirSync(modPath);
@@ -53,16 +57,24 @@ function scanModsDir(modsDir: string, enabled: boolean): ModInfo[] {
         sizeBytes: getDirSize(modPath),
       });
     }
-  } catch {
-    // Directory may not exist
+    return { mods, error: null };
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code;
+    if (code === 'ENOENT') {
+      return { mods: [], error: null }; // Directory not existing is normal
+    }
+    return { mods: [], error: `Failed to read mods directory ${modsDir}: ${(err as Error).message}` };
   }
-
-  return mods;
 }
 
-export function readAllMods(serverDir: string, disabledModsDir: string): ModInfo[] {
+export function readAllMods(serverDir: string, disabledModsDir: string): ModsResult {
   const enabledDir = path.join(serverDir, 'mods');
-  const enabledMods = scanModsDir(enabledDir, true);
-  const disabledMods = scanModsDir(disabledModsDir, false);
-  return [...enabledMods, ...disabledMods];
+  const enabled = scanModsDir(enabledDir, true);
+  const disabled = scanModsDir(disabledModsDir, false);
+
+  const errors: string[] = [];
+  if (enabled.error) errors.push(enabled.error);
+  if (disabled.error) errors.push(disabled.error);
+
+  return { data: [...enabled.mods, ...disabled.mods], errors };
 }

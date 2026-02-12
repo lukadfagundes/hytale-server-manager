@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { getPlayers, getMemories, getWarps, getWorldMap } from '../services/ipc-client';
+import { getPlayers, getMemories, getWarps, getWorldMap, onDataRefresh } from '../services/ipc-client';
+import { useToastStore } from './toast-store';
 import type { PlayerData } from '../types/player';
 import type { Memory } from '../types/memory';
 import type { Warp } from '../types/warp';
@@ -11,58 +12,118 @@ interface UniverseStore {
   warps: Warp[];
   worldMap: WorldMapData | null;
   loading: Record<string, boolean>;
-  error: string | null;
+  errors: Record<string, string[]>;
   fetchPlayers: () => Promise<void>;
   fetchMemories: () => Promise<void>;
   fetchWarps: () => Promise<void>;
   fetchWorldMap: () => Promise<void>;
+  initRefreshListener: () => () => void;
 }
 
-export const useUniverseStore = create<UniverseStore>((set) => ({
+function reportErrors(errors: string[]): void {
+  const addToast = useToastStore.getState().addToast;
+  for (const err of errors) {
+    addToast(err, 'warning');
+  }
+}
+
+export const useUniverseStore = create<UniverseStore>((set, get) => ({
   players: [],
   memories: { global: [], perPlayer: {} },
   warps: [],
   worldMap: null,
   loading: {},
-  error: null,
+  errors: {},
 
   fetchPlayers: async () => {
     set((s) => ({ loading: { ...s.loading, players: true } }));
     try {
-      const players = await getPlayers();
-      set((s) => ({ players, loading: { ...s.loading, players: false } }));
+      const result = await getPlayers();
+      if (result.errors.length > 0) reportErrors(result.errors);
+      set((s) => ({
+        players: result.data,
+        errors: { ...s.errors, players: result.errors },
+        loading: { ...s.loading, players: false },
+      }));
     } catch (err) {
-      set((s) => ({ error: String(err), loading: { ...s.loading, players: false } }));
+      const msg = String(err);
+      set((s) => ({
+        errors: { ...s.errors, players: [msg] },
+        loading: { ...s.loading, players: false },
+      }));
     }
   },
 
   fetchMemories: async () => {
     set((s) => ({ loading: { ...s.loading, memories: true } }));
     try {
-      const memories = await getMemories();
-      set((s) => ({ memories, loading: { ...s.loading, memories: false } }));
+      const result = await getMemories();
+      if (result.errors.length > 0) reportErrors(result.errors);
+      set((s) => ({
+        memories: result.data,
+        errors: { ...s.errors, memories: result.errors },
+        loading: { ...s.loading, memories: false },
+      }));
     } catch (err) {
-      set((s) => ({ error: String(err), loading: { ...s.loading, memories: false } }));
+      const msg = String(err);
+      set((s) => ({
+        errors: { ...s.errors, memories: [msg] },
+        loading: { ...s.loading, memories: false },
+      }));
     }
   },
 
   fetchWarps: async () => {
     set((s) => ({ loading: { ...s.loading, warps: true } }));
     try {
-      const warps = await getWarps();
-      set((s) => ({ warps, loading: { ...s.loading, warps: false } }));
+      const result = await getWarps();
+      if (result.errors.length > 0) reportErrors(result.errors);
+      set((s) => ({
+        warps: result.data,
+        errors: { ...s.errors, warps: result.errors },
+        loading: { ...s.loading, warps: false },
+      }));
     } catch (err) {
-      set((s) => ({ error: String(err), loading: { ...s.loading, warps: false } }));
+      const msg = String(err);
+      set((s) => ({
+        errors: { ...s.errors, warps: [msg] },
+        loading: { ...s.loading, warps: false },
+      }));
     }
   },
 
   fetchWorldMap: async () => {
     set((s) => ({ loading: { ...s.loading, worldMap: true } }));
     try {
-      const worldMap = await getWorldMap();
-      set((s) => ({ worldMap, loading: { ...s.loading, worldMap: false } }));
+      const result = await getWorldMap();
+      if (result.errors.length > 0) reportErrors(result.errors);
+      set((s) => ({
+        worldMap: result.data,
+        errors: { ...s.errors, worldMap: result.errors },
+        loading: { ...s.loading, worldMap: false },
+      }));
     } catch (err) {
-      set((s) => ({ error: String(err), loading: { ...s.loading, worldMap: false } }));
+      const msg = String(err);
+      set((s) => ({
+        errors: { ...s.errors, worldMap: [msg] },
+        loading: { ...s.loading, worldMap: false },
+      }));
     }
+  },
+
+  initRefreshListener: () => {
+    const refreshMap: Record<string, () => Promise<void>> = {
+      players: get().fetchPlayers,
+      memories: get().fetchMemories,
+      warps: get().fetchWarps,
+      worldMap: get().fetchWorldMap,
+    };
+
+    return onDataRefresh((category) => {
+      const fetcher = refreshMap[category];
+      if (fetcher) {
+        fetcher().catch(console.error);
+      }
+    });
   },
 }));
