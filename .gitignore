@@ -1,2 +1,45 @@
-# Temp
+# Server files (large binaries - re-download with hytale-downloader)
+Assets.zip
+Server/
+*.aot
+*.jar
+start.bat
+start.sh
+
+# Downloader executable (re-download from https://downloader.hytale.com/hytale-downloader.zip)
+hytale-downloader-windows-amd64.exe
+hytale-downloader-linux-amd64
+hytale-downloader.zip
+
+# Credentials (sensitive)
+.hytale-downloader-credentials.json
+credentials.json
+
+# World data and player data
+worlds/
+players/
 xXDandelionXx_EJNx/
+
+# Server runtime files
+logs/
+crash-reports/
+*.log
+
+# Backups (if you create them locally)
+backups/
+
+# Desktop App (build artifacts and server content)
+app/node_modules/
+app/dist/
+app/out/
+app/disabled-mods/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Trinity Method SDK
+.claude/
+trinity/
+*CLAUDE.md
+TRINITY.md

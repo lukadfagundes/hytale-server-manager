@@ -1,0 +1,21 @@
+appId: com.hytale-server.manager
+productName: Hytale Server Manager
+directories:
+  buildResources: build
+  output: out
+files:
+  - dist/**/*
+  - disabled-mods/**/*
+  - app-config.json
+  - package.json
+extraFiles:
+  - from: disabled-mods
+    to: disabled-mods
+win:
+  target:
+    - nsis
+    - portable
+linux:
+  target:
+    - AppImage
+    - deb

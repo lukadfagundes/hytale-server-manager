@@ -1,0 +1,16 @@
+{
+  "name": "hytale-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hytale Server Administration",
+  "scripts": {
+    "install:app": "cd app && npm install",
+    "dev": "cd app && npm run dev",
+    "dev:vite": "cd app && npm run dev:vite",
+    "dev:electron": "cd app && npm run dev:electron",
+    "build": "cd app && npm run build",
+    "package": "cd app && npm run package",
+    "typecheck": "cd app && npm run typecheck",
+    "postinstall": "cd app && npm install"
+  }
+}
