@@ -131,4 +131,26 @@ describe('readGlobalMemories', () => {
     expect(result.error).toBeNull();
     expect(result.data).toHaveLength(0);
   });
+
+  it('should return full unfiltered list (filtering is in IPC layer, not reader)', () => {
+    mockFs.readFileSync.mockReturnValue(validMemoriesJson);
+
+    const result = readGlobalMemories('/fake/server');
+
+    // Reader returns ALL memories — IPC handler applies discovery filter separately
+    expect(result.data).toHaveLength(3);
+    const roles = result.data.map(m => m.npcRole);
+    expect(roles).toEqual(['Goblin_Hermit', 'Pufferfish', 'Merchant_Trader']);
+  });
+
+  it('should preserve npcRole field exactly as read (for filter matching)', () => {
+    mockFs.readFileSync.mockReturnValue(validMemoriesJson);
+
+    const result = readGlobalMemories('/fake/server');
+
+    // npcRole must match NPCRole from JSON exactly (underscores preserved)
+    expect(result.data[0].npcRole).toBe('Goblin_Hermit');
+    expect(result.data[1].npcRole).toBe('Pufferfish');
+    expect(result.data[2].npcRole).toBe('Merchant_Trader');
+  });
 });
