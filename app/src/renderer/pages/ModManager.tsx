@@ -1,8 +1,48 @@
+import { useEffect } from 'react';
+import { useModStore } from '../stores/mod-store';
+import { useServerStore } from '../stores/server-store';
+import ModCard from '../components/mods/ModCard';
+
 export default function ModManager() {
+  const { mods, loading, fetchMods, toggleMod } = useModStore();
+  const serverStatus = useServerStore((s) => s.status);
+  const isServerRunning = serverStatus === 'running' || serverStatus === 'starting';
+
+  useEffect(() => {
+    fetchMods();
+  }, [fetchMods]);
+
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">Mod Manager</h1>
-      <p className="text-hytale-muted">Toggle mods on and off. Coming soon.</p>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Mod Manager</h1>
+        <span className="text-sm text-hytale-muted">{mods.length} mod(s)</span>
+      </div>
+
+      {isServerRunning && (
+        <div className="bg-yellow-900/30 border border-yellow-600/50 rounded-lg px-4 py-3 text-sm text-yellow-200">
+          Stop the server to manage mods.
+        </div>
+      )}
+
+      {loading ? (
+        <p className="text-hytale-muted">Loading mods...</p>
+      ) : mods.length === 0 ? (
+        <p className="text-hytale-muted">No mods found.</p>
+      ) : (
+        <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
+          {mods.map((mod) => (
+            <ModCard
+              key={mod.name}
+              name={mod.name}
+              enabled={mod.enabled}
+              hasStateFile={mod.hasStateFile}
+              sizeBytes={mod.sizeBytes}
+              onToggle={(enabled) => toggleMod(mod.name, enabled)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
