@@ -1,8 +1,11 @@
 import type { WorldMapData } from '../../types/world';
+import type { Position } from '../../types/player';
 import { formatBytes } from '../../utils/formatting';
+import MapMarkerIcon from './MapMarkerIcon';
 
 interface RegionGridProps {
   data: WorldMapData;
+  focusPosition?: Position;
 }
 
 function sizeToColor(sizeBytes: number, maxSize: number): string {
@@ -18,7 +21,7 @@ function blockToRegion(blockCoord: number): number {
   return Math.floor(blockCoord / 512);
 }
 
-export default function RegionGrid({ data }: RegionGridProps) {
+export default function RegionGrid({ data, focusPosition }: RegionGridProps) {
   const { regions, bounds, markers, playerPositions, warpPositions } = data;
 
   if (regions.length === 0) {
@@ -71,28 +74,28 @@ export default function RegionGrid({ data }: RegionGridProps) {
                         : `(${x}, ${z}) - Unexplored`
                     }
                   >
-                    {/* Overlay dots */}
+                    {/* Overlay markers */}
                     {overlayPlayers.map((p, i) => (
-                      <div
-                        key={`p${i}`}
-                        className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-green-400 border border-green-600"
-                        title={p.name}
-                      />
+                      <div key={`p${i}`} className="absolute top-0 right-0">
+                        <MapMarkerIcon type="player" name={p.name} size={16} />
+                      </div>
                     ))}
                     {overlayWarps.map((w, i) => (
-                      <div
-                        key={`w${i}`}
-                        className="absolute bottom-0.5 right-0.5 w-2 h-2 rounded-full bg-purple-400 border border-purple-600"
-                        title={w.name}
-                      />
+                      <div key={`w${i}`} className="absolute bottom-0 right-0">
+                        <MapMarkerIcon type="warp" name={w.name} size={16} />
+                      </div>
                     ))}
                     {overlayMarkers.map((m, i) => (
-                      <div
-                        key={`m${i}`}
-                        className="absolute top-0.5 left-0.5 w-2 h-2 rounded-full bg-yellow-400 border border-yellow-600"
-                        title={m.name}
-                      />
+                      <div key={`m${i}`} className="absolute top-0 left-0">
+                        <MapMarkerIcon type="marker" name={m.name} icon={m.icon} size={16} />
+                      </div>
                     ))}
+                    {focusPosition && blockToRegion(focusPosition.x) === x && blockToRegion(focusPosition.z) === z && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="w-6 h-6 rounded-full border-2 border-hytale-highlight animate-ping" />
+                        <div className="absolute w-3 h-3 rounded-full bg-hytale-highlight" />
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -104,13 +107,13 @@ export default function RegionGrid({ data }: RegionGridProps) {
       {/* Legend */}
       <div className="flex flex-wrap gap-4 text-xs text-hytale-muted">
         <span className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded-full bg-green-400 border border-green-600 inline-block" /> Player
+          <MapMarkerIcon type="player" name="Player" size={14} /> Player
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded-full bg-purple-400 border border-purple-600 inline-block" /> Warp
+          <MapMarkerIcon type="warp" name="Warp" size={14} /> Warp
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded-full bg-yellow-400 border border-yellow-600 inline-block" /> Marker
+          <MapMarkerIcon type="marker" name="Marker" size={14} /> Marker
         </span>
         <span className="flex items-center gap-1">
           <span className="w-3 h-3 bg-hytale-accent/50 inline-block" /> Small region

@@ -45,8 +45,20 @@ export function registerIpcHandlers(): void {
     const perPlayer = readPlayerMemories(getServerDir());
     const errors: string[] = [];
     if (globalResult.error) errors.push(globalResult.error);
+
+    // Filter global memories to only include NPCs discovered by at least one player
+    const discoveredNpcRoles = new Set<string>();
+    for (const memories of Object.values(perPlayer)) {
+      for (const mem of memories) {
+        discoveredNpcRoles.add(mem.npcRole);
+      }
+    }
+    const filteredGlobal = discoveredNpcRoles.size > 0
+      ? globalResult.data.filter(m => discoveredNpcRoles.has(m.npcRole))
+      : globalResult.data;
+
     return {
-      data: { global: globalResult.data, perPlayer },
+      data: { global: filteredGlobal, perPlayer },
       errors,
     };
   });

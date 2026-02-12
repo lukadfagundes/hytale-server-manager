@@ -3,11 +3,15 @@ import { formatCoords, formatDate } from '../../utils/formatting';
 
 interface WarpCardProps {
   warp: Warp;
+  onClick?: () => void;
 }
 
-export default function WarpCard({ warp }: WarpCardProps) {
+export default function WarpCard({ warp, onClick }: WarpCardProps) {
   return (
-    <div className="bg-hytale-dark rounded-lg border border-hytale-accent/30 p-4">
+    <div
+      className="bg-hytale-dark rounded-lg border border-hytale-accent/30 p-4 cursor-pointer hover:border-hytale-highlight transition-colors"
+      onClick={onClick}
+    >
       <div className="flex items-start justify-between">
         <div>
           <h3 className="text-sm font-medium text-hytale-text">{warp.id}</h3>

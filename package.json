@@ -13,6 +13,7 @@
     "typecheck": "cd app && npm run typecheck",
     "test": "cd app && npm test",
     "test:coverage": "cd app && npm run test:coverage",
+    "extract-assets": "python scripts/extract-assets.py",
     "postinstall": "cd app && npm install"
   }
 }
