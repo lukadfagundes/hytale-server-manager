@@ -19,12 +19,20 @@
   },
   "lint-staged": {
     "app/src/**/*.{ts,tsx}": [
+      "prettier --write",
+      "eslint --fix",
       "npm run typecheck",
       "npm test -- --findRelatedTests --passWithNoTests"
     ]
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.37.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
     "husky": "^9.1.7",
-    "lint-staged": "^15.2.0"
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.4.0"
   }
 }
