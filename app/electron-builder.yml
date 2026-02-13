@@ -11,6 +11,13 @@ files:
 extraFiles:
   - from: disabled-mods
     to: disabled-mods
+publish:
+  provider: github
+  owner: lukadfagundes
+  repo: hytale-server
+nsis:
+  oneClick: false
+  perMachine: false
 win:
   target:
     - nsis

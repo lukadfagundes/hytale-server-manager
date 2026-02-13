@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import { registerIpcHandlers } from './ipc-handlers';
 import { startWatcher, stopWatcher } from './file-watcher';
+import { initialize as initUpdater } from './updater-service';
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -56,6 +57,11 @@ function createWindow(): void {
 app.whenReady().then(async () => {
   registerIpcHandlers();
   createWindow();
+
+  // Initialize auto-updater (no-op in development, checks after 5s in production)
+  if (mainWindow) {
+    initUpdater(mainWindow);
+  }
 
   // Validate server path and start file watcher
   const serverDir = loadServerDir();

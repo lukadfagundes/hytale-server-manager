@@ -4,18 +4,27 @@ const ALLOWED_INVOKE_CHANNELS = [
   'server:start',
   'server:stop',
   'data:players',
-  'data:memories',
   'data:warps',
   'data:world-map',
   'data:server-config',
   'mods:list',
   'mods:toggle',
+  'updater:check',
+  'updater:download',
+  'updater:install',
+  'updater:get-version',
 ] as const;
 
 const ALLOWED_ON_CHANNELS = [
   'server:status-changed',
   'server:log',
   'data:refresh',
+  'updater:checking',
+  'updater:available',
+  'updater:not-available',
+  'updater:progress',
+  'updater:downloaded',
+  'updater:error',
 ] as const;
 
 type InvokeChannel = (typeof ALLOWED_INVOKE_CHANNELS)[number];

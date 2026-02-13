@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import { useUpdaterStore } from '../../stores/updater-store';
 
 const navItems = [
   { path: '/', label: 'Dashboard', icon: '~' },
@@ -8,6 +9,8 @@ const navItems = [
 ];
 
 export default function Sidebar() {
+  const appVersion = useUpdaterStore((s) => s.appVersion);
+
   return (
     <aside className="w-56 bg-hytale-dark border-r border-hytale-accent/30 flex flex-col">
       <div className="p-4 border-b border-hytale-accent/30">
@@ -34,7 +37,7 @@ export default function Sidebar() {
         ))}
       </nav>
       <div className="p-4 border-t border-hytale-accent/30">
-        <p className="text-xs text-hytale-muted">v1.0.0</p>
+        <p className="text-xs text-hytale-muted">v{appVersion}</p>
       </div>
     </aside>
   );

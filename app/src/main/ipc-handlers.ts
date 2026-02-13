@@ -9,6 +9,7 @@ import { readWorldMap } from './data-readers/world-reader';
 import { readAllMods } from './data-readers/mod-reader';
 import { toggleMod } from './mod-manager';
 import * as serverProcess from './server-process';
+import * as updaterService from './updater-service';
 
 function getServerDir(): string {
   return path.resolve(__dirname, '..', '..', '..', 'Server');
@@ -87,4 +88,10 @@ export function registerIpcHandlers(): void {
       throw new Error((err as Error).message);
     }
   });
+
+  // Updater handlers
+  ipcMain.handle(IPC.UPDATER_CHECK, () => updaterService.checkForUpdates());
+  ipcMain.handle(IPC.UPDATER_DOWNLOAD, () => updaterService.downloadUpdate());
+  ipcMain.handle(IPC.UPDATER_INSTALL, () => updaterService.quitAndInstall());
+  ipcMain.handle(IPC.UPDATER_GET_VERSION, () => updaterService.getVersion());
 }

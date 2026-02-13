@@ -1,0 +1,184 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  extract-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      version_without_v: ${{ steps.version.outputs.version_without_v }}
+    steps:
+      - name: Extract version from tag
+        id: version
+        run: |
+          version=${{ github.ref_name }}
+          version_without_v=${version#v}
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "version_without_v=$version_without_v" >> "$GITHUB_OUTPUT"
+
+  extract-notes:
+    runs-on: ubuntu-latest
+    outputs:
+      notes: ${{ steps.notes.outputs.notes }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract release notes from CHANGELOG
+        id: notes
+        run: |
+          version=${{ github.ref_name }}
+          version_without_v=${version#v}
+
+          # Extract section for this version
+          notes=$(sed -n "/^## \[${version_without_v}\]/,/^## \[/p" CHANGELOG.md | sed '1d;$d')
+
+          if [ -z "$notes" ]; then
+            echo "::error::No CHANGELOG entry found for version ${version_without_v}"
+            exit 1
+          fi
+
+          # Write to output using heredoc
+          {
+            echo "notes<<NOTES_EOF"
+            echo "$notes"
+            echo "NOTES_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+  build-windows:
+    needs: extract-version
+    runs-on: windows-latest
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+      - name: Extract assets
+        run: npm run extract-assets
+      - name: Build and package
+        run: npm run package
+
+      - name: Generate latest.yml
+        shell: pwsh
+        run: |
+          $version = "${{ needs.extract-version.outputs.version_without_v }}"
+          $exePath = Get-ChildItem -Path "app/out" -Filter "*.exe" -Recurse | Where-Object { $_.Name -match "Setup" -or $_.Name -match "Installer" } | Select-Object -First 1
+
+          if (-not $exePath) {
+            $exePath = Get-ChildItem -Path "app/out" -Filter "*.exe" -Recurse | Select-Object -First 1
+          }
+
+          if (-not $exePath) {
+            Write-Error "No .exe found in app/out"
+            exit 1
+          }
+
+          $sha512 = (Get-FileHash -Path $exePath.FullName -Algorithm SHA512).Hash.ToLower()
+          $size = $exePath.Length
+          $fileName = $exePath.Name
+          $releaseDate = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
+
+          $yml = @"
+          version: $version
+          files:
+            - url: $fileName
+              sha512: $sha512
+              size: $size
+          path: $fileName
+          sha512: $sha512
+          releaseDate: $releaseDate
+          "@
+
+          $yml | Out-File -FilePath "app/out/latest.yml" -Encoding utf8
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-windows
+          path: |
+            app/out/**/*.exe
+            app/out/latest.yml
+          retention-days: 30
+
+  build-linux:
+    needs: extract-version
+    runs-on: ubuntu-latest
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+      - name: Extract assets
+        run: npm run extract-assets
+      - name: Build and package
+        run: npm run package
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-linux
+          path: |
+            app/out/**/*.AppImage
+            app/out/**/*.deb
+          retention-days: 30
+
+  create-release:
+    needs: [extract-version, extract-notes, build-windows, build-linux]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-windows
+          path: artifacts/windows
+
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-linux
+          path: artifacts/linux
+
+      - name: Collect release files
+        run: |
+          mkdir -p release-files
+          find artifacts -type f \( -name "*.exe" -o -name "*.AppImage" -o -name "*.deb" -o -name "latest.yml" \) -exec cp {} release-files/ \;
+          echo "Release files:"
+          ls -la release-files/
+
+      - name: Create draft GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version="${{ needs.extract-version.outputs.version }}"
+          notes="${{ needs.extract-notes.outputs.notes }}"
+
+          gh release create "$version" \
+            --title "Hytale Server Manager $version" \
+            --notes "$(cat <<'EOF'
+          ${{ needs.extract-notes.outputs.notes }}
+
+          ---
+          [Full Changelog](https://github.com/lukadfagundes/hytale-server/blob/main/CHANGELOG.md)
+          EOF
+          )" \
+            --draft \
+            release-files/*

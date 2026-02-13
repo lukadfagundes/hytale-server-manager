@@ -64,3 +64,58 @@ export function onServerLog(callback: (entry: { line: string; stream: string; ti
 export function onDataRefresh(callback: (category: string) => void): () => void {
   return window.electronAPI.on('data:refresh', (data) => callback((data as { category: string }).category));
 }
+
+// --- Updater ---
+
+export interface UpdateInfo {
+  version: string;
+  releaseDate: string;
+  releaseNotes?: string;
+}
+
+export interface DownloadProgress {
+  percent: number;
+  bytesPerSecond: number;
+  transferred: number;
+  total: number;
+}
+
+export async function checkForUpdates(): Promise<void> {
+  await window.electronAPI.invoke('updater:check');
+}
+
+export async function downloadUpdate(): Promise<void> {
+  await window.electronAPI.invoke('updater:download');
+}
+
+export async function installUpdate(): Promise<void> {
+  await window.electronAPI.invoke('updater:install');
+}
+
+export async function getAppVersion(): Promise<string> {
+  return (await window.electronAPI.invoke('updater:get-version')) as string;
+}
+
+export function onUpdaterChecking(callback: () => void): () => void {
+  return window.electronAPI.on('updater:checking', callback);
+}
+
+export function onUpdaterAvailable(callback: (info: UpdateInfo) => void): () => void {
+  return window.electronAPI.on('updater:available', (info) => callback(info as UpdateInfo));
+}
+
+export function onUpdaterNotAvailable(callback: () => void): () => void {
+  return window.electronAPI.on('updater:not-available', callback);
+}
+
+export function onUpdaterProgress(callback: (progress: DownloadProgress) => void): () => void {
+  return window.electronAPI.on('updater:progress', (progress) => callback(progress as DownloadProgress));
+}
+
+export function onUpdaterDownloaded(callback: (info: UpdateInfo) => void): () => void {
+  return window.electronAPI.on('updater:downloaded', (info) => callback(info as UpdateInfo));
+}
+
+export function onUpdaterError(callback: (error: { message: string }) => void): () => void {
+  return window.electronAPI.on('updater:error', (error) => callback(error as { message: string }));
+}

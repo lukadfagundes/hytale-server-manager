@@ -1,7 +1,8 @@
 {
   "name": "hytale-server-manager",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Hytale Server Manager Desktop Application",
+  "author": "lukadfagundes",
   "main": "dist/main/index.js",
   "scripts": {
     "extract-assets": "node scripts/extract-assets.js",
@@ -19,6 +20,7 @@
   },
   "dependencies": {
     "chokidar": "^4.0.0",
+    "electron-updater": "^6.3.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.1.0",
