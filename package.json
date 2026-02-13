@@ -21,9 +21,10 @@
     "app/src/**/*.{ts,tsx}": [
       "npm run typecheck",
       "npm test -- --findRelatedTests --passWithNoTests"
-    ],
-    "*.{json,yml,yaml}": [
-      "npx --yes prettier --check"
     ]
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.0"
   }
 }

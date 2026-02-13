@@ -29,6 +29,7 @@ crash-reports/
 backups/
 
 # Desktop App (build artifacts and server content)
+node_modules/
 app/node_modules/
 app/dist/
 app/out/
