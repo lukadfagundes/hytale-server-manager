@@ -22,10 +22,10 @@ export default function Dashboard() {
   }, [init, initUniverseRefresh, initModRefresh]);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
+    <div className="flex flex-col h-full">
+      <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
 
-      <div className="flex justify-center py-8">
+      <div className="flex justify-center py-6">
         <ServerToggle />
       </div>
 

@@ -43,7 +43,11 @@ export const useServerStore = create<ServerStore>((set) => ({
   clearLogs: () => set({ logs: [] }),
   init: () => {
     const unsubStatus = onServerStatusChanged((status) => {
-      set({ status: status as ServerStatus });
+      if (status === 'starting') {
+        set({ status: status as ServerStatus, logs: [] });
+      } else {
+        set({ status: status as ServerStatus });
+      }
     });
     const unsubLog = onServerLog((entry) => {
       set((state) => {

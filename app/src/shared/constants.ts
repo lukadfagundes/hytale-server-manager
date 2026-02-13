@@ -9,7 +9,6 @@ export const IPC = {
   SERVER_STATUS: 'server:status-changed',
   SERVER_LOG: 'server:log',
   DATA_PLAYERS: 'data:players',
-  DATA_MEMORIES: 'data:memories',
   DATA_WARPS: 'data:warps',
   DATA_WORLD_MAP: 'data:world-map',
   DATA_SERVER_CONFIG: 'data:server-config',

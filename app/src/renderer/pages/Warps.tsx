@@ -1,20 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useUniverseStore } from '../stores/universe-store';
 import WarpCard from '../components/warps/WarpCard';
-import WarpMapModal from '../components/warps/WarpMapModal';
-import type { Warp } from '../types/warp';
 
 type SortMode = 'name' | 'date';
 
 export default function Warps() {
-  const { warps, loading, errors, fetchWarps, fetchWorldMap } = useUniverseStore();
+  const { warps, loading, errors, fetchWarps } = useUniverseStore();
   const [sort, setSort] = useState<SortMode>('name');
-  const [selectedWarp, setSelectedWarp] = useState<Warp | null>(null);
 
   useEffect(() => {
     fetchWarps();
-    fetchWorldMap();
-  }, [fetchWarps, fetchWorldMap]);
+  }, [fetchWarps]);
 
   const warpErrors = errors.warps ?? [];
 
@@ -55,12 +51,10 @@ export default function Warps() {
       ) : (
         <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
           {sorted.map((warp) => (
-            <WarpCard key={warp.id} warp={warp} onClick={() => setSelectedWarp(warp)} />
+            <WarpCard key={warp.id} warp={warp} />
           ))}
         </div>
       )}
-
-      <WarpMapModal warp={selectedWarp} onClose={() => setSelectedWarp(null)} />
     </div>
   );
 }

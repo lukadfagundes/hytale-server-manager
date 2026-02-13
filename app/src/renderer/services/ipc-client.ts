@@ -1,7 +1,6 @@
 import type { PlayerData } from '../types/player';
 import type { ModInfo } from '../types/mod';
 import type { WorldMapData } from '../types/world';
-import type { Memory } from '../types/memory';
 import type { Warp } from '../types/warp';
 
 declare global {
@@ -28,14 +27,6 @@ export async function stopServer(): Promise<void> {
 
 export async function getPlayers(): Promise<DataResult<PlayerData[]>> {
   const result = (await window.electronAPI.invoke('data:players')) as { data: PlayerData[]; errors: string[] };
-  return { data: result.data, errors: result.errors };
-}
-
-export async function getMemories(): Promise<DataResult<{ global: Memory[]; perPlayer: Record<string, Memory[]> }>> {
-  const result = (await window.electronAPI.invoke('data:memories')) as {
-    data: { global: Memory[]; perPlayer: Record<string, Memory[]> };
-    errors: string[];
-  };
   return { data: result.data, errors: result.errors };
 }
 

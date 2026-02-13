@@ -5,8 +5,6 @@ import ToastContainer from './components/layout/ToastContainer';
 import Dashboard from './pages/Dashboard';
 import ModManager from './pages/ModManager';
 import Players from './pages/Players';
-import WorldMap from './pages/WorldMap';
-import Memories from './pages/Memories';
 import Warps from './pages/Warps';
 
 export default function App() {
@@ -21,8 +19,6 @@ export default function App() {
               <Route path="/" element={<Dashboard />} />
               <Route path="/mods" element={<ModManager />} />
               <Route path="/players" element={<Players />} />
-              <Route path="/world-map" element={<WorldMap />} />
-              <Route path="/memories" element={<Memories />} />
               <Route path="/warps" element={<Warps />} />
             </Routes>
           </main>

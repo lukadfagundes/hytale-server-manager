@@ -77,7 +77,8 @@ function parseStat(raw: any): { current: number; modifiers: Record<string, numbe
 
 function formatTranslationKey(key: string): string {
   const parts = key.split('.');
-  const meaningful = parts.length >= 3 ? parts[parts.length - 2] : parts[parts.length - 1];
+  const last = parts[parts.length - 1];
+  const meaningful = last === 'name' && parts.length >= 3 ? parts[parts.length - 2] : last;
   return meaningful.replace(/_/g, ' ');
 }
 

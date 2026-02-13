@@ -126,8 +126,8 @@ describe('readAllPlayers', () => {
     expect(memories).toHaveLength(3);
     expect(memories[0].npcRole).toBe('Goblin_Hermit');
     expect(memories[0].displayName).toBe('Goblin Hermit');
-    // 'server.map.region.Zone1_Tier1' → picks second-to-last part 'region'
-    expect(memories[0].location).toBe('region');
+    // 'server.map.region.Zone1_Tier1' → last segment since it doesn't end in '.name'
+    expect(memories[0].location).toBe('Zone1 Tier1');
     expect(memories[0].capturedAt).toBe(1707750000000);
     expect(memories[0].isNameOverridden).toBe(false);
   });

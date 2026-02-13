@@ -1,20 +1,17 @@
 import { create } from 'zustand';
-import { getPlayers, getMemories, getWarps, getWorldMap, onDataRefresh } from '../services/ipc-client';
+import { getPlayers, getWarps, getWorldMap, onDataRefresh } from '../services/ipc-client';
 import { useToastStore } from './toast-store';
 import type { PlayerData } from '../types/player';
-import type { Memory } from '../types/memory';
 import type { Warp } from '../types/warp';
 import type { WorldMapData } from '../types/world';
 
 interface UniverseStore {
   players: PlayerData[];
-  memories: { global: Memory[]; perPlayer: Record<string, Memory[]> };
   warps: Warp[];
   worldMap: WorldMapData | null;
   loading: Record<string, boolean>;
   errors: Record<string, string[]>;
   fetchPlayers: () => Promise<void>;
-  fetchMemories: () => Promise<void>;
   fetchWarps: () => Promise<void>;
   fetchWorldMap: () => Promise<void>;
   initRefreshListener: () => () => void;
@@ -29,7 +26,6 @@ function reportErrors(errors: string[]): void {
 
 export const useUniverseStore = create<UniverseStore>((set, get) => ({
   players: [],
-  memories: { global: [], perPlayer: {} },
   warps: [],
   worldMap: null,
   loading: {},
@@ -50,25 +46,6 @@ export const useUniverseStore = create<UniverseStore>((set, get) => ({
       set((s) => ({
         errors: { ...s.errors, players: [msg] },
         loading: { ...s.loading, players: false },
-      }));
-    }
-  },
-
-  fetchMemories: async () => {
-    set((s) => ({ loading: { ...s.loading, memories: true } }));
-    try {
-      const result = await getMemories();
-      if (result.errors.length > 0) reportErrors(result.errors);
-      set((s) => ({
-        memories: result.data,
-        errors: { ...s.errors, memories: result.errors },
-        loading: { ...s.loading, memories: false },
-      }));
-    } catch (err) {
-      const msg = String(err);
-      set((s) => ({
-        errors: { ...s.errors, memories: [msg] },
-        loading: { ...s.loading, memories: false },
       }));
     }
   },
@@ -114,7 +91,6 @@ export const useUniverseStore = create<UniverseStore>((set, get) => ({
   initRefreshListener: () => {
     const refreshMap: Record<string, () => Promise<void>> = {
       players: get().fetchPlayers,
-      memories: get().fetchMemories,
       warps: get().fetchWarps,
       worldMap: get().fetchWorldMap,
     };

@@ -4,8 +4,6 @@ const navItems = [
   { path: '/', label: 'Dashboard', icon: '~' },
   { path: '/mods', label: 'Mods', icon: '&' },
   { path: '/players', label: 'Players', icon: '#' },
-  { path: '/world-map', label: 'World Map', icon: '%' },
-  { path: '/memories', label: 'Memories', icon: '*' },
   { path: '/warps', label: 'Warps', icon: '@' },
 ];
 
@@ -25,7 +23,7 @@ export default function Sidebar() {
             className={({ isActive }) =>
               `flex items-center gap-3 px-4 py-3 text-sm transition-colors ${
                 isActive
-                  ? 'bg-hytale-accent/40 text-white border-r-2 border-hytale-highlight'
+                  ? 'bg-hytale-accent/40 text-hytale-text border-r-2 border-hytale-highlight'
                   : 'text-hytale-muted hover:text-hytale-text hover:bg-hytale-accent/20'
               }`
             }

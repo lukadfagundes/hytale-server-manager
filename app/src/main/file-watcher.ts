@@ -2,7 +2,7 @@ import path from 'path';
 import { BrowserWindow } from 'electron';
 import { IPC } from '../shared/constants';
 
-type RefreshCategory = 'players' | 'memories' | 'warps' | 'worldMap' | 'mods';
+type RefreshCategory = 'players' | 'warps' | 'worldMap' | 'mods';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let watcher: any = null;
@@ -29,9 +29,6 @@ function categorizeChange(filePath: string): RefreshCategory | null {
   if (normalized.includes('/universe/players/') && normalized.endsWith('.json')) {
     return 'players';
   }
-  if (normalized.includes('/universe/memories.json')) {
-    return 'memories';
-  }
   if (normalized.includes('/universe/warps.json')) {
     return 'warps';
   }
@@ -53,7 +50,6 @@ export async function startWatcher(serverDir: string): Promise<void> {
 
   const watchPaths = [
     path.join(serverDir, 'universe', 'players'),
-    path.join(serverDir, 'universe', 'memories.json'),
     path.join(serverDir, 'universe', 'warps.json'),
     path.join(serverDir, 'universe', 'worlds', 'default', 'chunks'),
     path.join(serverDir, 'universe', 'worlds', 'default', 'resources', 'BlockMapMarkers.json'),

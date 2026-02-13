@@ -2,8 +2,8 @@ import { ipcMain } from 'electron';
 import fs from 'fs';
 import path from 'path';
 import { IPC } from '../shared/constants';
-import { readAllPlayers, readPlayerMemories } from './data-readers/player-reader';
-import { readGlobalMemories } from './data-readers/memory-reader';
+import { readAllPlayers } from './data-readers/player-reader';
+
 import { readWarps } from './data-readers/warp-reader';
 import { readWorldMap } from './data-readers/world-reader';
 import { readAllMods } from './data-readers/mod-reader';
@@ -38,29 +38,6 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IPC.DATA_PLAYERS, async () => {
     const result = readAllPlayers(getServerDir());
     return { data: result.data, errors: result.errors };
-  });
-
-  ipcMain.handle(IPC.DATA_MEMORIES, async () => {
-    const globalResult = readGlobalMemories(getServerDir());
-    const perPlayer = readPlayerMemories(getServerDir());
-    const errors: string[] = [];
-    if (globalResult.error) errors.push(globalResult.error);
-
-    // Filter global memories to only include NPCs discovered by at least one player
-    const discoveredNpcRoles = new Set<string>();
-    for (const memories of Object.values(perPlayer)) {
-      for (const mem of memories) {
-        discoveredNpcRoles.add(mem.npcRole);
-      }
-    }
-    const filteredGlobal = discoveredNpcRoles.size > 0
-      ? globalResult.data.filter(m => discoveredNpcRoles.has(m.npcRole))
-      : globalResult.data;
-
-    return {
-      data: { global: filteredGlobal, perPlayer },
-      errors,
-    };
   });
 
   ipcMain.handle(IPC.DATA_WARPS, async () => {

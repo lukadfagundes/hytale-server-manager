@@ -32,10 +32,10 @@ export default function ModCard({ name, enabled, hasStateFile, sizeBytes, onTogg
         />
         <div className={`w-11 h-6 rounded-full peer-focus:outline-none after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:rounded-full after:h-5 after:w-5 after:transition-all ${
           isServerRunning
-            ? 'bg-gray-600 after:bg-gray-400 cursor-not-allowed'
+            ? 'bg-hytale-accent/60 after:bg-hytale-muted cursor-not-allowed'
             : enabled
             ? 'bg-green-600 after:bg-white after:translate-x-full'
-            : 'bg-gray-500 after:bg-gray-300'
+            : 'bg-hytale-accent/40 after:bg-hytale-muted'
         }`} />
       </label>
     </div>
