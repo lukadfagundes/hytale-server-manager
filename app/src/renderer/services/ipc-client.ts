@@ -65,6 +65,35 @@ export function onDataRefresh(callback: (category: string) => void): () => void 
   return window.electronAPI.on('data:refresh', (data) => callback((data as { category: string }).category));
 }
 
+// --- Config ---
+
+export interface ServerPathInfo {
+  path: string;
+  valid: boolean;
+}
+
+export interface SelectDirResult {
+  selected: boolean;
+  path?: string;
+  valid?: boolean;
+}
+
+export async function getServerPath(): Promise<ServerPathInfo> {
+  return (await window.electronAPI.invoke('config:get-server-path')) as ServerPathInfo;
+}
+
+export async function setServerPath(newPath: string): Promise<{ success: boolean; error?: string }> {
+  return (await window.electronAPI.invoke('config:set-server-path', newPath)) as { success: boolean; error?: string };
+}
+
+export async function selectServerDir(): Promise<SelectDirResult> {
+  return (await window.electronAPI.invoke('config:select-server-dir')) as SelectDirResult;
+}
+
+export function onServerPathChanged(callback: (info: ServerPathInfo) => void): () => void {
+  return window.electronAPI.on('config:server-path-changed', (info) => callback(info as ServerPathInfo));
+}
+
 // --- Updater ---
 
 export interface UpdateInfo {

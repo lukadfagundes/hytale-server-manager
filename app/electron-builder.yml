@@ -18,6 +18,7 @@ publish:
 nsis:
   oneClick: false
   perMachine: false
+  createDesktopShortcut: true
 win:
   target:
     - nsis

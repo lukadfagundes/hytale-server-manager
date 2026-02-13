@@ -15,6 +15,12 @@ export const IPC = {
   MODS_LIST: 'mods:list',
   MODS_TOGGLE: 'mods:toggle',
   DATA_REFRESH: 'data:refresh',
+  // Config channels (renderer → main)
+  CONFIG_GET_SERVER_PATH: 'config:get-server-path',
+  CONFIG_SET_SERVER_PATH: 'config:set-server-path',
+  CONFIG_SELECT_SERVER_DIR: 'config:select-server-dir',
+  // Config event channels (main → renderer)
+  CONFIG_SERVER_PATH_CHANGED: 'config:server-path-changed',
   // Updater - Request channels (renderer → main)
   UPDATER_CHECK: 'updater:check',
   UPDATER_DOWNLOAD: 'updater:download',

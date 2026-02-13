@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { BrowserWindow } from 'electron';
 import { IPC } from '../shared/constants';
+import { getServerDir } from './server-path';
 
 export type ServerStatus = 'stopped' | 'starting' | 'running' | 'stopping';
 
@@ -34,7 +35,8 @@ function pushLog(line: string, stream: 'stdout' | 'stderr'): void {
 }
 
 function getProjectRoot(): string {
-  return path.resolve(__dirname, '..', '..', '..');
+  // Project root is the parent of the Server directory
+  return path.resolve(getServerDir(), '..');
 }
 
 export function start(): Promise<void> {

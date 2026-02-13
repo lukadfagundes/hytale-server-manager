@@ -1,31 +1,11 @@
-import { app, BrowserWindow, dialog } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import path from 'path';
-import fs from 'fs';
 import { registerIpcHandlers } from './ipc-handlers';
 import { startWatcher, stopWatcher } from './file-watcher';
 import { initialize as initUpdater } from './updater-service';
+import { initServerPath, isServerDirValid } from './server-path';
 
 let mainWindow: BrowserWindow | null = null;
-
-function getAppConfigPath(): string {
-  return path.resolve(__dirname, '..', '..', 'app-config.json');
-}
-
-function loadServerDir(): string {
-  const configPath = getAppConfigPath();
-  try {
-    const raw = fs.readFileSync(configPath, 'utf-8');
-    const config = JSON.parse(raw);
-    if (config.serverPath) {
-      const resolved = path.resolve(path.dirname(configPath), config.serverPath);
-      if (fs.existsSync(resolved)) return resolved;
-    }
-  } catch {
-    // Config missing or malformed — fall back to default
-  }
-  // Default: ../Server relative to app/
-  return path.resolve(__dirname, '..', '..', '..', 'Server');
-}
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -63,21 +43,16 @@ app.whenReady().then(async () => {
     initUpdater(mainWindow);
   }
 
-  // Validate server path and start file watcher
-  const serverDir = loadServerDir();
-  if (fs.existsSync(serverDir)) {
+  // Initialize server path from config and start file watcher if valid
+  const serverDir = initServerPath();
+  if (isServerDirValid(serverDir)) {
     try {
       await startWatcher(serverDir);
     } catch (err) {
       console.error('[App] Failed to start file watcher:', err);
     }
-  } else {
-    dialog.showMessageBox({
-      type: 'warning',
-      title: 'Server Directory Not Found',
-      message: `Could not find Server directory at:\n${serverDir}\n\nData reading features will not work until the Server directory is available.`,
-    });
   }
+  // No dialog warning — the renderer will show the setup screen when path is invalid
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -95,7 +70,3 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
-
-export function getMainWindow(): BrowserWindow | null {
-  return mainWindow;
-}

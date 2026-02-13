@@ -14,6 +14,16 @@
     "test": "cd app && npm test",
     "test:coverage": "cd app && npm run test:coverage",
     "extract-assets": "cd app && node scripts/extract-assets.js",
-    "postinstall": "cd app && npm install"
+    "postinstall": "cd app && npm install",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "app/src/**/*.{ts,tsx}": [
+      "npm run typecheck",
+      "npm test -- --findRelatedTests --passWithNoTests"
+    ],
+    "*.{json,yml,yaml}": [
+      "npx --yes prettier --check"
+    ]
   }
 }

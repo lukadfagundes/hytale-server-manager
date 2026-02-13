@@ -5,10 +5,20 @@ jest.mock('electron', () => ({
   BrowserWindow: {
     getAllWindows: jest.fn().mockReturnValue([]),
   },
+  app: {
+    isPackaged: false,
+    getPath: jest.fn().mockReturnValue('/tmp'),
+    getVersion: jest.fn().mockReturnValue('0.0.1'),
+  },
 }));
 
 jest.mock('fs');
 jest.mock('child_process');
+
+// Mock server-path to return a deterministic directory
+jest.mock('../../main/server-path', () => ({
+  getServerDir: jest.fn().mockReturnValue('/mock/Server'),
+}));
 
 import fs from 'fs';
 import { spawn } from 'child_process';
@@ -27,6 +37,15 @@ function getModule() {
       BrowserWindow: {
         getAllWindows: jest.fn().mockReturnValue([]),
       },
+      app: {
+        isPackaged: false,
+        getPath: jest.fn().mockReturnValue('/tmp'),
+        getVersion: jest.fn().mockReturnValue('0.0.1'),
+      },
+    }));
+    // Mock server-path in isolated context
+    jest.doMock('../../main/server-path', () => ({
+      getServerDir: jest.fn().mockReturnValue('/mock/Server'),
     }));
     mod = require('../../main/server-process');
   });
