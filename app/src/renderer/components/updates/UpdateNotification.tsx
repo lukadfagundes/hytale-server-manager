@@ -30,7 +30,10 @@ export default function UpdateNotification() {
 
   const shouldShow =
     !dismissed &&
-    (status === 'available' || status === 'downloading' || status === 'downloaded' || status === 'error');
+    (status === 'available' ||
+      status === 'downloading' ||
+      status === 'downloaded' ||
+      status === 'error');
 
   const handleClose = useCallback(() => {
     if (status === 'downloading') {
@@ -89,16 +92,10 @@ export default function UpdateNotification() {
             />
           )}
           {status === 'downloading' && (
-            <DownloadingContent
-              progress={downloadProgress}
-              onBackground={remindLater}
-            />
+            <DownloadingContent progress={downloadProgress} onBackground={remindLater} />
           )}
           {status === 'downloaded' && (
-            <DownloadedContent
-              onInstallLater={remindLater}
-              onInstall={installUpdate}
-            />
+            <DownloadedContent onInstallLater={remindLater} onInstall={installUpdate} />
           )}
           {status === 'error' && (
             <ErrorContent
@@ -211,7 +208,8 @@ function DownloadingContent({
       {/* Transfer info */}
       {progress && progress.total > 0 && (
         <p className="text-xs text-hytale-muted text-center">
-          {formatBytes(progress.transferred)} / {formatBytes(progress.total)} &bull; {formatSpeed(progress.bytesPerSecond)}
+          {formatBytes(progress.transferred)} / {formatBytes(progress.total)} &bull;{' '}
+          {formatSpeed(progress.bytesPerSecond)}
         </p>
       )}
 
@@ -237,7 +235,13 @@ function DownloadedContent({
     <div className="space-y-4">
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
-          <svg className="w-5 h-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg
+            className="w-5 h-5 text-green-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
@@ -278,8 +282,10 @@ function ErrorContent({
 }) {
   return (
     <div className="space-y-4">
-      <div className="bg-red-900/30 border border-red-500/30 rounded p-3">
-        <p className="text-sm text-red-300">{error || 'An unknown error occurred while checking for updates.'}</p>
+      <div className="bg-red-900/30 border border-red-500/30 rounded p-3 max-h-40 overflow-auto">
+        <p className="text-sm text-red-300 break-words">
+          {error || 'An unknown error occurred while checking for updates.'}
+        </p>
       </div>
 
       <div className="flex gap-2">
