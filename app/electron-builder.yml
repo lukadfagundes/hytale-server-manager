@@ -19,6 +19,7 @@ nsis:
   oneClick: false
   perMachine: false
   createDesktopShortcut: true
+  uninstallDisplayName: Hytale Server Manager
 win:
   target:
     - nsis
