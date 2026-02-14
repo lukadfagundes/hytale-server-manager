@@ -2,7 +2,10 @@
   "name": "hytale-server-manager",
   "version": "0.0.1",
   "description": "Hytale Server Manager Desktop Application",
-  "author": "lukadfagundes",
+  "author": {
+    "name": "Luka Fagundes",
+    "email": "luka@sunny-stack.com"
+  },
   "main": "dist/main/index.js",
   "scripts": {
     "extract-assets": "node scripts/extract-assets.js",
