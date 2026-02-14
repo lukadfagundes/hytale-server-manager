@@ -11,11 +11,11 @@ function getFallbackLetter(displayName: string, npcRole: string): string {
 describe('NpcPortrait logic', () => {
   describe('image path generation', () => {
     it('should generate correct portrait path for NPC role', () => {
-      expect(getNpcPortraitPath('Goblin_Hermit')).toBe('/assets/npcs/Goblin_Hermit.png');
+      expect(getNpcPortraitPath('Goblin_Hermit')).toBe('asset:///npcs/Goblin_Hermit.png');
     });
 
     it('should generate correct path for single-word role', () => {
-      expect(getNpcPortraitPath('Pufferfish')).toBe('/assets/npcs/Pufferfish.png');
+      expect(getNpcPortraitPath('Pufferfish')).toBe('asset:///npcs/Pufferfish.png');
     });
   });
 

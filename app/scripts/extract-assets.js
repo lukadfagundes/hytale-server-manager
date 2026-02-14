@@ -1,14 +1,17 @@
 #!/usr/bin/env node
 /**
- * Extract Hytale game assets (icons, portraits, map markers) from Assets.zip.
+ * LEGACY — Build-time asset extraction to app/public/assets/.
+ *
+ * The primary extraction path is now runtime via asset-extractor.ts, which
+ * extracts to userData/asset-cache/ and serves files through the asset://
+ * custom protocol. This script is kept for manual use during development
+ * (e.g. `npm run extract-assets`) but is no longer run via predev/prebuild hooks.
  *
  * Uses node-stream-zip for memory-efficient streaming of large archives.
  * Skips extraction if Assets.zip has not changed since last run (.assets-stamp).
  *
  * Also builds item-icon-map.json — a mapping from item IDs to their actual icon
  * filenames, since ~20% of items use a different icon than their own ID.
- *
- * Runs automatically via predev/prebuild npm hooks.
  */
 
 const fs = require('fs');

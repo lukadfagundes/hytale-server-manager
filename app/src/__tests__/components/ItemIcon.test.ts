@@ -7,18 +7,18 @@ import { formatItemId } from '../../renderer/utils/translation';
 describe('ItemIcon logic', () => {
   describe('image path generation', () => {
     it('should generate correct icon path for standard item', () => {
-      expect(getItemIconPath('Weapon_Daggers_Adamantite'))
-        .toBe('/assets/items/Weapon_Daggers_Adamantite.png');
+      expect(getItemIconPath('Weapon_Daggers_Adamantite')).toBe(
+        'asset:///items/Weapon_Daggers_Adamantite.png'
+      );
     });
 
     it('should generate correct icon path for armor item', () => {
-      expect(getItemIconPath('Armor_Cobalt_Head'))
-        .toBe('/assets/items/Armor_Cobalt_Head.png');
+      expect(getItemIconPath('Armor_Cobalt_Head')).toBe('asset:///items/Armor_Cobalt_Head.png');
     });
 
     it('should generate path even for empty string', () => {
       const path = getItemIconPath('');
-      expect(path).toBe('/assets/items/.png');
+      expect(path).toBe('asset:///items/.png');
     });
   });
 

@@ -11,6 +11,7 @@ import * as serverProcess from './server-process';
 import * as updaterService from './updater-service';
 import { getServerDir, getDisabledModsDir, setServerDir, isServerDirValid } from './server-path';
 import { stopWatcher, startWatcher } from './file-watcher';
+import { extractAssets, areAssetsCached } from './asset-extractor';
 
 export function registerIpcHandlers(): void {
   ipcMain.handle(IPC.SERVER_START, async () => {
@@ -43,14 +44,14 @@ export function registerIpcHandlers(): void {
     const playersResult = readAllPlayers(getServerDir());
     const warpsResult = readWarps(getServerDir());
 
-    const playerPositions = playersResult.data.map(p => ({
+    const playerPositions = playersResult.data.map((p) => ({
       name: p.name,
       position: p.position,
     }));
 
     const warpPositions = warpsResult.data
-      .filter(w => w.world === 'default')
-      .map(w => ({
+      .filter((w) => w.world === 'default')
+      .map((w) => ({
         name: w.id,
         position: w.position,
       }));
@@ -110,6 +111,11 @@ export function registerIpcHandlers(): void {
       win.webContents.send(IPC.CONFIG_SERVER_PATH_CHANGED, { path: dir, valid: true });
     }
 
+    // Trigger asset extraction for the new path
+    if (isServerDirValid(dir)) {
+      broadcastAssetExtraction(dir);
+    }
+
     return { success: true };
   });
 
@@ -129,9 +135,44 @@ export function registerIpcHandlers(): void {
     return { selected: true, path: selectedPath, valid };
   });
 
+  // Asset handlers
+  ipcMain.handle(IPC.ASSETS_EXTRACT, async () => {
+    const dir = getServerDir();
+    if (!isServerDirValid(dir)) {
+      return { success: false, error: 'Server directory is not valid' };
+    }
+    return broadcastAssetExtraction(dir);
+  });
+
+  ipcMain.handle(IPC.ASSETS_STATUS, () => {
+    return { cached: areAssetsCached() };
+  });
+
   // Updater handlers
   ipcMain.handle(IPC.UPDATER_CHECK, () => updaterService.checkForUpdates());
   ipcMain.handle(IPC.UPDATER_DOWNLOAD, () => updaterService.downloadUpdate());
   ipcMain.handle(IPC.UPDATER_INSTALL, () => updaterService.quitAndInstall());
   ipcMain.handle(IPC.UPDATER_GET_VERSION, () => updaterService.getVersion());
+}
+
+async function broadcastAssetExtraction(
+  serverDir: string
+): Promise<{ success: boolean; error?: string }> {
+  const windows = BrowserWindow.getAllWindows();
+
+  for (const win of windows) {
+    win.webContents.send(IPC.ASSETS_EXTRACTING);
+  }
+
+  const result = await extractAssets(serverDir);
+
+  for (const win of BrowserWindow.getAllWindows()) {
+    if (result.success) {
+      win.webContents.send(IPC.ASSETS_READY);
+    } else {
+      win.webContents.send(IPC.ASSETS_ERROR, { message: result.error });
+    }
+  }
+
+  return { success: result.success, error: result.error };
 }

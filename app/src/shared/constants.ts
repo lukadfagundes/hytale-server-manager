@@ -21,6 +21,13 @@ export const IPC = {
   CONFIG_SELECT_SERVER_DIR: 'config:select-server-dir',
   // Config event channels (main → renderer)
   CONFIG_SERVER_PATH_CHANGED: 'config:server-path-changed',
+  // Asset channels (renderer → main)
+  ASSETS_EXTRACT: 'assets:extract',
+  ASSETS_STATUS: 'assets:status',
+  // Asset event channels (main → renderer)
+  ASSETS_EXTRACTING: 'assets:extracting',
+  ASSETS_READY: 'assets:ready',
+  ASSETS_ERROR: 'assets:error',
   // Updater - Request channels (renderer → main)
   UPDATER_CHECK: 'updater:check',
   UPDATER_DOWNLOAD: 'updater:download',

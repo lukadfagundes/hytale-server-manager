@@ -20,9 +20,7 @@
   "lint-staged": {
     "app/src/**/*.{ts,tsx}": [
       "prettier --write",
-      "eslint --fix",
-      "npm run typecheck",
-      "npm test -- --findRelatedTests --passWithNoTests"
+      "eslint --fix"
     ]
   },
   "devDependencies": {

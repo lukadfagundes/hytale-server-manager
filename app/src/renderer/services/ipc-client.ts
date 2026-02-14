@@ -26,17 +26,26 @@ export async function stopServer(): Promise<void> {
 }
 
 export async function getPlayers(): Promise<DataResult<PlayerData[]>> {
-  const result = (await window.electronAPI.invoke('data:players')) as { data: PlayerData[]; errors: string[] };
+  const result = (await window.electronAPI.invoke('data:players')) as {
+    data: PlayerData[];
+    errors: string[];
+  };
   return { data: result.data, errors: result.errors };
 }
 
 export async function getWarps(): Promise<DataResult<Warp[]>> {
-  const result = (await window.electronAPI.invoke('data:warps')) as { data: Warp[]; error: string | null };
+  const result = (await window.electronAPI.invoke('data:warps')) as {
+    data: Warp[];
+    error: string | null;
+  };
   return { data: result.data, errors: result.error ? [result.error] : [] };
 }
 
 export async function getWorldMap(): Promise<DataResult<WorldMapData>> {
-  const result = (await window.electronAPI.invoke('data:world-map')) as { data: WorldMapData; errors: string[] };
+  const result = (await window.electronAPI.invoke('data:world-map')) as {
+    data: WorldMapData;
+    errors: string[];
+  };
   return { data: result.data, errors: result.errors };
 }
 
@@ -45,7 +54,10 @@ export async function getServerConfig(): Promise<Record<string, unknown>> {
 }
 
 export async function getMods(): Promise<DataResult<ModInfo[]>> {
-  const result = (await window.electronAPI.invoke('mods:list')) as { data: ModInfo[]; errors: string[] };
+  const result = (await window.electronAPI.invoke('mods:list')) as {
+    data: ModInfo[];
+    errors: string[];
+  };
   return { data: result.data, errors: result.errors };
 }
 
@@ -57,12 +69,18 @@ export function onServerStatusChanged(callback: (status: string) => void): () =>
   return window.electronAPI.on('server:status-changed', (status) => callback(status as string));
 }
 
-export function onServerLog(callback: (entry: { line: string; stream: string; timestamp: number }) => void): () => void {
-  return window.electronAPI.on('server:log', (entry) => callback(entry as { line: string; stream: string; timestamp: number }));
+export function onServerLog(
+  callback: (entry: { line: string; stream: string; timestamp: number }) => void
+): () => void {
+  return window.electronAPI.on('server:log', (entry) =>
+    callback(entry as { line: string; stream: string; timestamp: number })
+  );
 }
 
 export function onDataRefresh(callback: (category: string) => void): () => void {
-  return window.electronAPI.on('data:refresh', (data) => callback((data as { category: string }).category));
+  return window.electronAPI.on('data:refresh', (data) =>
+    callback((data as { category: string }).category)
+  );
 }
 
 // --- Config ---
@@ -82,8 +100,13 @@ export async function getServerPath(): Promise<ServerPathInfo> {
   return (await window.electronAPI.invoke('config:get-server-path')) as ServerPathInfo;
 }
 
-export async function setServerPath(newPath: string): Promise<{ success: boolean; error?: string }> {
-  return (await window.electronAPI.invoke('config:set-server-path', newPath)) as { success: boolean; error?: string };
+export async function setServerPath(
+  newPath: string
+): Promise<{ success: boolean; error?: string }> {
+  return (await window.electronAPI.invoke('config:set-server-path', newPath)) as {
+    success: boolean;
+    error?: string;
+  };
 }
 
 export async function selectServerDir(): Promise<SelectDirResult> {
@@ -91,7 +114,34 @@ export async function selectServerDir(): Promise<SelectDirResult> {
 }
 
 export function onServerPathChanged(callback: (info: ServerPathInfo) => void): () => void {
-  return window.electronAPI.on('config:server-path-changed', (info) => callback(info as ServerPathInfo));
+  return window.electronAPI.on('config:server-path-changed', (info) =>
+    callback(info as ServerPathInfo)
+  );
+}
+
+// --- Assets ---
+
+export async function extractAssets(): Promise<{ success: boolean; error?: string }> {
+  return (await window.electronAPI.invoke('assets:extract')) as {
+    success: boolean;
+    error?: string;
+  };
+}
+
+export async function getAssetStatus(): Promise<{ cached: boolean }> {
+  return (await window.electronAPI.invoke('assets:status')) as { cached: boolean };
+}
+
+export function onAssetsExtracting(callback: () => void): () => void {
+  return window.electronAPI.on('assets:extracting', callback);
+}
+
+export function onAssetsReady(callback: () => void): () => void {
+  return window.electronAPI.on('assets:ready', callback);
+}
+
+export function onAssetsError(callback: (error: { message: string }) => void): () => void {
+  return window.electronAPI.on('assets:error', (error) => callback(error as { message: string }));
 }
 
 // --- Updater ---
@@ -138,7 +188,9 @@ export function onUpdaterNotAvailable(callback: () => void): () => void {
 }
 
 export function onUpdaterProgress(callback: (progress: DownloadProgress) => void): () => void {
-  return window.electronAPI.on('updater:progress', (progress) => callback(progress as DownloadProgress));
+  return window.electronAPI.on('updater:progress', (progress) =>
+    callback(progress as DownloadProgress)
+  );
 }
 
 export function onUpdaterDownloaded(callback: (info: UpdateInfo) => void): () => void {

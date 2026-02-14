@@ -11,6 +11,7 @@ import Players from './pages/Players';
 import Warps from './pages/Warps';
 import { useUpdaterStore } from './stores/updater-store';
 import { useConfigStore } from './stores/config-store';
+import { useAssetStore } from './stores/asset-store';
 
 export default function App() {
   const configStatus = useConfigStore((s) => s.status);
@@ -18,9 +19,11 @@ export default function App() {
   useEffect(() => {
     const cleanupUpdater = useUpdaterStore.getState().init();
     const cleanupConfig = useConfigStore.getState().init();
+    const cleanupAssets = useAssetStore.getState().init();
     return () => {
       cleanupUpdater();
       cleanupConfig();
+      cleanupAssets();
     };
   }, []);
 
