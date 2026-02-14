@@ -5,8 +5,13 @@ export function toggleMod(
   serverDir: string,
   disabledModsDir: string,
   modName: string,
-  enabled: boolean,
+  enabled: boolean
 ): void {
+  // Input validation: reject mod names containing path separators or ".."
+  if (/[/\\]/.test(modName) || modName.includes('..')) {
+    throw new Error(`Invalid mod name "${modName}": must not contain path separators or ".."`);
+  }
+
   const enabledPath = path.join(serverDir, 'mods', modName);
   const disabledPath = path.join(disabledModsDir, modName);
 
@@ -31,7 +36,9 @@ export function toggleMod(
   } catch (err) {
     const code = (err as NodeJS.ErrnoException).code;
     if (code === 'EACCES' || code === 'EPERM') {
-      throw new Error(`Permission denied: cannot ${action} "${modName}". Check file permissions for: ${src}`);
+      throw new Error(
+        `Permission denied: cannot ${action} "${modName}". Check file permissions for: ${src}`
+      );
     }
     if (code === 'EBUSY') {
       throw new Error(`Directory is locked: cannot ${action} "${modName}". Is the server running?`);

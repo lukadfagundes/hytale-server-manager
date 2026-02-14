@@ -169,16 +169,17 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           version="${{ needs.extract-version.outputs.version }}"
-          notes="${{ needs.extract-notes.outputs.notes }}"
 
-          gh release create "$version" \
-            --title "Hytale Server Manager $version" \
-            --notes "$(cat <<'EOF'
+          # Write release notes to file to avoid shell injection from CHANGELOG content
+          cat > release-notes.md <<'NOTES_EOF'
           ${{ needs.extract-notes.outputs.notes }}
 
           ---
-          [Full Changelog](https://github.com/lukadfagundes/hytale-server/blob/main/CHANGELOG.md)
-          EOF
-          )" \
+          [Full Changelog](https://github.com/lukadfagundes/hytale-server-manager/blob/main/CHANGELOG.md)
+          NOTES_EOF
+
+          gh release create "$version" \
+            --title "Hytale Server Manager $version" \
+            --notes-file release-notes.md \
             --draft \
             release-files/*

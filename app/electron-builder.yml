@@ -6,7 +6,6 @@ directories:
 files:
   - dist/**/*
   - disabled-mods/**/*
-  - app-config.json
   - package.json
 extraFiles:
   - from: disabled-mods

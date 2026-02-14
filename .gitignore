@@ -37,6 +37,9 @@ app/build/
 app/disabled-mods/
 app/coverage/
 
+# Developer-specific config (contains local server path)
+app/app-config.json
+
 # OS files
 .DS_Store
 Thumbs.db

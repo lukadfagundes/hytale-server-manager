@@ -51,7 +51,15 @@ app.whenReady().then(async () => {
     const relativePath = decodeURIComponent(
       request.url.replace(/^asset:\/\/\/?/, '').replace(/\/+$/, '')
     );
-    const filePath = path.join(getAssetCacheDir(), relativePath);
+    const cacheDir = getAssetCacheDir();
+    const filePath = path.resolve(path.join(cacheDir, relativePath));
+
+    // Path traversal guard: resolved path must remain within the cache directory
+    const resolvedCacheDir = path.resolve(cacheDir);
+    if (!filePath.startsWith(resolvedCacheDir + path.sep) && filePath !== resolvedCacheDir) {
+      return new Response('Forbidden', { status: 403 });
+    }
+
     try {
       return await net.fetch(pathToFileURL(filePath).href);
     } catch {

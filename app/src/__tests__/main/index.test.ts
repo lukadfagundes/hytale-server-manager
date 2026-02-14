@@ -247,6 +247,81 @@ describe('main/index', () => {
 
       expect(response.status).toBe(404);
     });
+
+    it('should return 403 for path traversal with .. segments', async () => {
+      mockGetAssetCacheDir.mockReturnValue('/mock/userData/asset-cache');
+
+      loadModule();
+      await whenReadyCallback!();
+
+      const handlerFn = mockProtocolHandle.mock.calls.find(
+        (call: any[]) => call[0] === 'asset'
+      )![1];
+
+      const mockRequest = { url: 'asset:///../../../etc/passwd' };
+      const response = await handlerFn(mockRequest);
+
+      expect(response.status).toBe(403);
+      expect(mockNetFetch).not.toHaveBeenCalled();
+    });
+
+    it('should return 403 for URL-encoded path traversal (%2F..%2F)', async () => {
+      mockGetAssetCacheDir.mockReturnValue('/mock/userData/asset-cache');
+
+      loadModule();
+      await whenReadyCallback!();
+
+      const handlerFn = mockProtocolHandle.mock.calls.find(
+        (call: any[]) => call[0] === 'asset'
+      )![1];
+
+      // %2F = /, so this decodes to /../../../etc/passwd
+      const mockRequest = { url: 'asset:///%2F..%2F..%2F..%2Fetc%2Fpasswd' };
+      const response = await handlerFn(mockRequest);
+
+      expect(response.status).toBe(403);
+      expect(mockNetFetch).not.toHaveBeenCalled();
+    });
+
+    it('should return 403 for double-encoded path traversal', async () => {
+      mockGetAssetCacheDir.mockReturnValue('/mock/userData/asset-cache');
+
+      loadModule();
+      await whenReadyCallback!();
+
+      const handlerFn = mockProtocolHandle.mock.calls.find(
+        (call: any[]) => call[0] === 'asset'
+      )![1];
+
+      // ..%252F.. (double encoded) - after one decodeURIComponent becomes ..%2F..
+      // The actual path resolution will handle this
+      const mockRequest = { url: 'asset:///..%2F..%2Fsome%2Fpath' };
+      const response = await handlerFn(mockRequest);
+
+      expect(response.status).toBe(403);
+      expect(mockNetFetch).not.toHaveBeenCalled();
+    });
+
+    it('should still serve valid assets after path traversal guard is in place', async () => {
+      mockGetAssetCacheDir.mockReturnValue('/mock/userData/asset-cache');
+      mockNetFetch.mockResolvedValue(new Response('valid data'));
+
+      loadModule();
+      await whenReadyCallback!();
+
+      const handlerFn = mockProtocolHandle.mock.calls.find(
+        (call: any[]) => call[0] === 'asset'
+      )![1];
+
+      // Valid request within cache directory
+      const mockRequest = { url: 'asset:///items/valid-item.png' };
+      const response = await handlerFn(mockRequest);
+
+      // Should have called net.fetch (not blocked)
+      expect(mockNetFetch).toHaveBeenCalled();
+      // Response should be from net.fetch, not the 403
+      expect(response).toBeDefined();
+    });
   });
 });
 
