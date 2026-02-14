@@ -21,6 +21,7 @@ function createWindow(): void {
     height: 800,
     minWidth: 900,
     minHeight: 600,
+    icon: path.join(__dirname, '../../public/assets/icon.png'),
     title: 'Hytale Server Manager',
     webPreferences: {
       contextIsolation: true,

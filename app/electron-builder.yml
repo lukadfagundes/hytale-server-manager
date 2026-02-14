@@ -23,7 +23,9 @@ win:
   target:
     - nsis
     - portable
+  icon: public/assets/icon.png
 linux:
   target:
     - AppImage
     - deb
+  icon: public/assets/icon.png
