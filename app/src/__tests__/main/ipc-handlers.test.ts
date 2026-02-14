@@ -1,12 +1,15 @@
 // Collect all registered IPC handlers so we can invoke them in tests
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const handlers: Record<string, (...args: any[]) => any> = {};
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockIpcMainHandle = jest.fn((channel: string, handler: (...args: any[]) => any) => {
   handlers[channel] = handler;
 });
 
 jest.mock('electron', () => ({
   ipcMain: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     handle: (...args: any[]) => mockIpcMainHandle(...args),
   },
   dialog: {
@@ -43,7 +46,10 @@ import { stopWatcher, startWatcher } from '../../main/file-watcher';
 import { extractAssets, areAssetsCached } from '../../main/asset-extractor';
 import { readAllPlayers } from '../../main/data-readers/player-reader';
 import { readWarps } from '../../main/data-readers/warp-reader';
+import { readWorldMap } from '../../main/data-readers/world-reader';
 import { readAllMods } from '../../main/data-readers/mod-reader';
+import * as serverProcess from '../../main/server-process';
+import * as updaterService from '../../main/updater-service';
 
 const mockGetServerDir = jest.mocked(getServerDir);
 const mockGetDisabledModsDir = jest.mocked(getDisabledModsDir);
@@ -58,7 +64,10 @@ const mockExtractAssets = jest.mocked(extractAssets);
 const mockAreAssetsCached = jest.mocked(areAssetsCached);
 const mockReadAllPlayers = jest.mocked(readAllPlayers);
 const mockReadWarps = jest.mocked(readWarps);
+const mockReadWorldMap = jest.mocked(readWorldMap);
 const mockReadAllMods = jest.mocked(readAllMods);
+const mockServerProcess = jest.mocked(serverProcess);
+const mockUpdaterService = jest.mocked(updaterService);
 
 describe('ipc-handlers', () => {
   beforeEach(() => {
@@ -206,7 +215,9 @@ describe('ipc-handlers', () => {
       mockSetServerDir.mockReturnValue(true);
       mockIsServerDirValid.mockReturnValue(true);
       const mockSend = jest.fn();
-      mockBrowserWindow.getAllWindows.mockReturnValue([{ webContents: { send: mockSend } } as any]);
+      mockBrowserWindow.getAllWindows.mockReturnValue([
+        { webContents: { send: mockSend } } as unknown,
+      ]);
 
       await handlers['config:set-server-path']({}, '/new/Server');
 
@@ -224,7 +235,7 @@ describe('ipc-handlers', () => {
 
     it('should return selected: false when dialog is canceled', async () => {
       mockDialog.showOpenDialog.mockResolvedValue({ canceled: true, filePaths: [] });
-      mockBrowserWindow.getAllWindows.mockReturnValue([{ id: 1 } as any]);
+      mockBrowserWindow.getAllWindows.mockReturnValue([{ id: 1 } as unknown]);
 
       const result = await handlers['config:select-server-dir']();
 
@@ -236,7 +247,7 @@ describe('ipc-handlers', () => {
         canceled: false,
         filePaths: ['/chosen/Server'],
       });
-      mockBrowserWindow.getAllWindows.mockReturnValue([{ id: 1 } as any]);
+      mockBrowserWindow.getAllWindows.mockReturnValue([{ id: 1 } as unknown]);
       mockIsServerDirValid.mockReturnValue(true);
 
       const result = await handlers['config:select-server-dir']();
@@ -246,7 +257,7 @@ describe('ipc-handlers', () => {
 
     it('should return valid: false for invalid selected directory', async () => {
       mockDialog.showOpenDialog.mockResolvedValue({ canceled: false, filePaths: ['/empty/dir'] });
-      mockBrowserWindow.getAllWindows.mockReturnValue([{ id: 1 } as any]);
+      mockBrowserWindow.getAllWindows.mockReturnValue([{ id: 1 } as unknown]);
       mockIsServerDirValid.mockReturnValue(false);
 
       const result = await handlers['config:select-server-dir']();
@@ -255,7 +266,7 @@ describe('ipc-handlers', () => {
     });
 
     it('should use focused window for dialog when available', async () => {
-      const focusedWin = { id: 1 } as any;
+      const focusedWin = { id: 1 } as unknown;
       mockBrowserWindow.getFocusedWindow.mockReturnValue(focusedWin);
       mockDialog.showOpenDialog.mockResolvedValue({ canceled: true, filePaths: [] });
 
@@ -277,7 +288,9 @@ describe('ipc-handlers', () => {
       mockIsServerDirValid.mockReturnValue(true);
       mockExtractAssets.mockResolvedValue({ success: true, totalFiles: 10 });
       const mockSend = jest.fn();
-      mockBrowserWindow.getAllWindows.mockReturnValue([{ webContents: { send: mockSend } } as any]);
+      mockBrowserWindow.getAllWindows.mockReturnValue([
+        { webContents: { send: mockSend } } as unknown,
+      ]);
 
       const result = await handlers['assets:extract']();
 
@@ -300,7 +313,9 @@ describe('ipc-handlers', () => {
       mockIsServerDirValid.mockReturnValue(true);
       mockExtractAssets.mockResolvedValue({ success: false, error: 'Assets.zip not found' });
       const mockSend = jest.fn();
-      mockBrowserWindow.getAllWindows.mockReturnValue([{ webContents: { send: mockSend } } as any]);
+      mockBrowserWindow.getAllWindows.mockReturnValue([
+        { webContents: { send: mockSend } } as unknown,
+      ]);
 
       const result = await handlers['assets:extract']();
 
@@ -339,7 +354,9 @@ describe('ipc-handlers', () => {
       mockIsServerDirValid.mockReturnValue(true);
       mockExtractAssets.mockResolvedValue({ success: true, totalFiles: 5 });
       const mockSend = jest.fn();
-      mockBrowserWindow.getAllWindows.mockReturnValue([{ webContents: { send: mockSend } } as any]);
+      mockBrowserWindow.getAllWindows.mockReturnValue([
+        { webContents: { send: mockSend } } as unknown,
+      ]);
 
       await handlers['config:set-server-path']({}, '/new/Server');
 
@@ -353,6 +370,192 @@ describe('ipc-handlers', () => {
       await handlers['config:set-server-path']({}, '/new/path');
 
       expect(mockExtractAssets).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('SERVER_START', () => {
+    beforeEach(() => {
+      registerIpcHandlers();
+    });
+
+    it('should call serverProcess.start on invocation', async () => {
+      mockServerProcess.start.mockResolvedValue(undefined);
+
+      await handlers['server:start']();
+
+      expect(mockServerProcess.start).toHaveBeenCalled();
+    });
+
+    it('should throw error when serverProcess.start rejects', async () => {
+      mockServerProcess.start.mockRejectedValue(new Error('Server already running'));
+
+      await expect(handlers['server:start']()).rejects.toThrow('Server already running');
+    });
+  });
+
+  describe('SERVER_STOP', () => {
+    beforeEach(() => {
+      registerIpcHandlers();
+    });
+
+    it('should call serverProcess.stop on invocation', async () => {
+      mockServerProcess.stop.mockResolvedValue(undefined);
+
+      await handlers['server:stop']();
+
+      expect(mockServerProcess.stop).toHaveBeenCalled();
+    });
+
+    it('should throw error when serverProcess.stop rejects', async () => {
+      mockServerProcess.stop.mockRejectedValue(new Error('Server not running'));
+
+      await expect(handlers['server:stop']()).rejects.toThrow('Server not running');
+    });
+  });
+
+  describe('DATA_WORLD_MAP', () => {
+    beforeEach(() => {
+      registerIpcHandlers();
+    });
+
+    it('should call readAllPlayers, readWarps, and readWorldMap with getServerDir()', async () => {
+      mockReadAllPlayers.mockReturnValue({
+        data: [{ uuid: 'abc', name: 'Player1', position: { x: 10, y: 64, z: 20 } }],
+        errors: [],
+      });
+      mockReadWarps.mockReturnValue({
+        data: [{ id: 'spawn', world: 'default', position: { x: 0, y: 64, z: 0 } }],
+        error: null,
+      });
+      mockReadWorldMap.mockReturnValue({
+        data: { regions: [], markers: [], playerPositions: [], warpPositions: [] },
+        errors: [],
+      });
+
+      await handlers['data:world-map']();
+
+      expect(mockReadAllPlayers).toHaveBeenCalledWith('/mock/Server');
+      expect(mockReadWarps).toHaveBeenCalledWith('/mock/Server');
+      expect(mockReadWorldMap).toHaveBeenCalledWith(
+        '/mock/Server',
+        expect.any(Array),
+        expect.any(Array)
+      );
+    });
+
+    it('should return combined { data, errors } structure', async () => {
+      mockReadAllPlayers.mockReturnValue({ data: [], errors: [] });
+      mockReadWarps.mockReturnValue({ data: [], error: null });
+      mockReadWorldMap.mockReturnValue({
+        data: { regions: [], markers: [], playerPositions: [], warpPositions: [] },
+        errors: ['Region 0,0 corrupted'],
+      });
+
+      const result = await handlers['data:world-map']();
+
+      expect(result).toHaveProperty('data');
+      expect(result).toHaveProperty('errors');
+      expect(result.errors).toEqual(['Region 0,0 corrupted']);
+    });
+
+    it('should map player positions correctly (name + position)', async () => {
+      mockReadAllPlayers.mockReturnValue({
+        data: [
+          { uuid: 'abc', name: 'Player1', position: { x: 10, y: 64, z: 20 } },
+          { uuid: 'def', name: 'Player2', position: { x: 50, y: 70, z: 100 } },
+        ],
+        errors: [],
+      });
+      mockReadWarps.mockReturnValue({ data: [], error: null });
+      mockReadWorldMap.mockReturnValue({
+        data: { regions: [], markers: [], playerPositions: [], warpPositions: [] },
+        errors: [],
+      });
+
+      await handlers['data:world-map']();
+
+      expect(mockReadWorldMap).toHaveBeenCalledWith(
+        '/mock/Server',
+        [
+          { name: 'Player1', position: { x: 10, y: 64, z: 20 } },
+          { name: 'Player2', position: { x: 50, y: 70, z: 100 } },
+        ],
+        expect.any(Array)
+      );
+    });
+
+    it('should filter warps to world === "default" only', async () => {
+      mockReadAllPlayers.mockReturnValue({ data: [], errors: [] });
+      mockReadWarps.mockReturnValue({
+        data: [
+          { id: 'spawn', world: 'default', position: { x: 0, y: 64, z: 0 } },
+          { id: 'nether_hub', world: 'nether', position: { x: 100, y: 50, z: 100 } },
+          { id: 'home', world: 'default', position: { x: 200, y: 70, z: 200 } },
+        ],
+        error: null,
+      });
+      mockReadWorldMap.mockReturnValue({
+        data: { regions: [], markers: [], playerPositions: [], warpPositions: [] },
+        errors: [],
+      });
+
+      await handlers['data:world-map']();
+
+      expect(mockReadWorldMap).toHaveBeenCalledWith('/mock/Server', expect.any(Array), [
+        { name: 'spawn', position: { x: 0, y: 64, z: 0 } },
+        { name: 'home', position: { x: 200, y: 70, z: 200 } },
+      ]);
+    });
+  });
+
+  describe('UPDATER_CHECK', () => {
+    beforeEach(() => {
+      registerIpcHandlers();
+    });
+
+    it('should call updaterService.checkForUpdates', () => {
+      handlers['updater:check']();
+
+      expect(mockUpdaterService.checkForUpdates).toHaveBeenCalled();
+    });
+  });
+
+  describe('UPDATER_DOWNLOAD', () => {
+    beforeEach(() => {
+      registerIpcHandlers();
+    });
+
+    it('should call updaterService.downloadUpdate', () => {
+      handlers['updater:download']();
+
+      expect(mockUpdaterService.downloadUpdate).toHaveBeenCalled();
+    });
+  });
+
+  describe('UPDATER_INSTALL', () => {
+    beforeEach(() => {
+      registerIpcHandlers();
+    });
+
+    it('should call updaterService.quitAndInstall', () => {
+      handlers['updater:install']();
+
+      expect(mockUpdaterService.quitAndInstall).toHaveBeenCalled();
+    });
+  });
+
+  describe('UPDATER_GET_VERSION', () => {
+    beforeEach(() => {
+      registerIpcHandlers();
+    });
+
+    it('should call updaterService.getVersion and return version string', () => {
+      mockUpdaterService.getVersion.mockReturnValue('1.2.3');
+
+      const result = handlers['updater:get-version']();
+
+      expect(mockUpdaterService.getVersion).toHaveBeenCalled();
+      expect(result).toBe('1.2.3');
     });
   });
 });
