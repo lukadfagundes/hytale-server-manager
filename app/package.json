@@ -16,6 +16,7 @@
     "build": "tsc -p tsconfig.node.json && vite build --config vite.config.ts",
     "build:main": "tsc -p tsconfig.node.json",
     "package": "npm run build && electron-builder",
+    "package:ci": "npm run build && electron-builder --publish never",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.node.json --noEmit",
     "test": "node node_modules/jest/bin/jest.js",
     "test:coverage": "node node_modules/jest/bin/jest.js --coverage"

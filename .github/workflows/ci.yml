@@ -42,10 +42,8 @@ jobs:
         include:
           - os: ubuntu-latest
             platform: linux
-            build-command: package
           - os: windows-latest
             platform: win32
-            build-command: package
     runs-on: ${{ matrix.os }}
     env:
       CSC_IDENTITY_AUTO_DISCOVERY: false
@@ -60,7 +58,7 @@ jobs:
       - name: Extract assets
         run: npm run extract-assets
       - name: Build and package
-        run: npm run ${{ matrix.build-command }}
+        run: npm run package:ci
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:

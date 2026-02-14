@@ -10,6 +10,7 @@
     "dev:electron": "cd app && npm run dev:electron",
     "build": "cd app && npm run build",
     "package": "cd app && npm run package",
+    "package:ci": "cd app && npm run package:ci",
     "typecheck": "cd app && npm run typecheck",
     "test": "cd app && npm test",
     "test:coverage": "cd app && npm run test:coverage",
