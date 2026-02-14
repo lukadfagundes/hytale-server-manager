@@ -6,6 +6,7 @@
     "name": "Luka Fagundes",
     "email": "luka@sunny-stack.com"
   },
+  "homepage": "https://github.com/lukadfagundes/hytale-server-manager",
   "main": "dist/main/index.js",
   "scripts": {
     "extract-assets": "node scripts/extract-assets.js",
