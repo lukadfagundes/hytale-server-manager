@@ -20,7 +20,7 @@ A desktop application for managing a Hytale dedicated game server. Monitor serve
 
 ## Prerequisites
 
-- **Node.js** 18+ and **npm**
+- **Node.js** 22+ and **npm**
 - A Hytale dedicated server installation (`HytaleServer.jar` + `Assets.zip`)
 - **Java 25** (for running the Hytale server itself)
 
@@ -196,6 +196,7 @@ Detailed documentation is available in the [`docs/`](docs/) directory:
 
 ### Guides
 - [Getting Started](docs/guides/getting-started.md) - Development setup and first run
+- [Installation](docs/guides/installation.md) - End-user download, install, first-run setup, and auto-updates
 - [IPC Development](docs/guides/ipc-development.md) - Adding new IPC channels
 - [Packaging & Distribution](docs/guides/packaging.md) - Building and releasing
 - [Server Hosting](docs/guides/server-hosting.md) - Dedicated server setup and configuration

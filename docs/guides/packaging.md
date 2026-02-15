@@ -155,44 +155,51 @@ For auto-update to work, releases must include the platform-specific installer f
 
 ## Release Workflow
 
+Releases are automated via the `.github/workflows/release.yml` workflow. Pushing a version tag triggers the entire pipeline.
+
 ### 1. Verify Quality
 
-Before building a release, ensure all checks pass:
+Before tagging a release, ensure all checks pass:
 
 ```bash
 npm run typecheck     # Type-check both tsconfig files
-npm test              # Run all 17 test suites
+npm test              # Run all test suites
 npm run build         # Verify the build compiles cleanly
 ```
 
-### 2. Build Installers
+### 2. Update Version and Tag
+
+Update the version in `app/package.json`, commit the change, then create and push a version tag:
 
 ```bash
-npm run package
+# After updating app/package.json version to X.X.X
+git tag vX.X.X
+git push origin vX.X.X
 ```
 
-Output appears in `app/out/`:
+### 3. Automated Build and Release
 
-```
-app/out/
-├── Hytale Server Manager Setup 0.0.1.exe     # NSIS installer (Windows)
-├── Hytale Server Manager 0.0.1.exe            # Portable (Windows)
-├── Hytale Server Manager-0.0.1.AppImage       # AppImage (Linux)
-├── hytale-server-manager_0.0.1_amd64.deb      # Debian package (Linux)
-├── latest.yml                                  # Auto-update metadata (Windows)
-└── latest-linux.yml                            # Auto-update metadata (Linux)
-```
+Pushing the tag triggers the `release.yml` workflow, which:
 
-### 3. Create a GitHub Release
+1. **Extracts version** from the tag name
+2. **Extracts release notes** from `CHANGELOG.md` for the tagged version
+3. **Builds Windows artifacts** (NSIS installer, portable executable, `latest.yml`)
+4. **Builds Linux artifacts** (AppImage, deb package, `latest-linux.yml`)
+5. **Creates a draft GitHub Release** with all artifacts attached
 
-1. Tag the commit with a version: `git tag v0.0.2`
-2. Push the tag: `git push origin v0.0.2`
-3. Create a release on GitHub attached to the tag
-4. Upload all files from `app/out/`, including the `.yml` metadata files
+The workflow runs Windows and Linux builds in parallel, then creates a single draft release containing all installer files and auto-update metadata.
 
-The `.yml` files are required for the auto-updater to detect and download new versions.
+### 4. Publish the Release
 
-### 4. Version Bumps
+After the workflow completes, review the draft release on GitHub:
+
+1. Verify all artifacts are attached (installers + `.yml` metadata files)
+2. Review the auto-extracted release notes
+3. Click **Publish release** to make it public
+
+The `.yml` metadata files are required for the auto-updater to detect and download new versions.
+
+### 5. Version Bumps
 
 The version is defined in `app/package.json`:
 

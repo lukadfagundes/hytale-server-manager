@@ -199,7 +199,7 @@ graph LR
 
 ## Adding a New Channel
 
-To add a new IPC channel, update these three files:
+To add a new IPC channel, update these four files:
 
 1. **`app/src/shared/constants.ts`** -- Add the channel name to the `IPC` const object
 2. **`app/src/preload/index.ts`** -- Add to `ALLOWED_INVOKE_CHANNELS` or `ALLOWED_ON_CHANNELS`

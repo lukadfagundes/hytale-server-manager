@@ -40,6 +40,7 @@ Step-by-step instructions for common development and operations tasks.
 | Document | Description |
 |----------|-------------|
 | [getting-started.md](guides/getting-started.md) | Dev environment setup, first run, and project orientation |
+| [installation.md](guides/installation.md) | End-user download, install, first-run setup, and auto-updates |
 | [ipc-development.md](guides/ipc-development.md) | Adding a new IPC channel end-to-end (shared constants, preload, handler, client) |
 | [packaging.md](guides/packaging.md) | Building installers, configuring electron-builder, and publishing releases |
 | [server-hosting.md](guides/server-hosting.md) | Hytale dedicated server setup, configuration, and troubleshooting |

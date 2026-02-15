@@ -9,14 +9,14 @@ Set up your local development environment by following the [Getting Started Guid
 ## Development Workflow
 
 1. **Fork** the repository and clone your fork locally.
-2. **Create a feature branch** off `dev`:
+2. **Create a feature branch** off `main`:
    ```bash
-   git checkout dev
-   git pull origin dev
+   git checkout main
+   git pull origin main
    git checkout -b feat/15-my-feature
    ```
 3. **Make your changes** and commit using conventional commit messages (see below).
-4. **Push** your branch and open a **Pull Request** targeting the `dev` branch.
+4. **Push** your branch and open a **Pull Request** targeting the `main` branch.
 
 ### Branch Naming
 
@@ -135,13 +135,14 @@ The Electron app has strict process isolation:
 - **Never import between these two directories.** All communication goes through IPC.
 - Only `app/src/shared/` is imported by both processes.
 
-### IPC Changes Require Three-File Updates
+### IPC Changes Require Four-File Updates
 
-Adding or modifying an IPC channel requires changes in three files:
+Adding or modifying an IPC channel requires changes in four files:
 
 1. `app/src/shared/constants.ts` -- channel name constant
 2. `app/src/preload/index.ts` -- whitelist entry
-3. `app/src/main/ipc-handlers.ts` (for handlers) or `app/src/renderer/services/ipc-client.ts` (for client wrappers)
+3. `app/src/main/ipc-handlers.ts` -- handler registration
+4. `app/src/renderer/services/ipc-client.ts` -- typed client wrapper
 
 Missing any one of these causes silent failures. See the [IPC Development Guide](docs/guides/ipc-development.md) for details.
 

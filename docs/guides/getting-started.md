@@ -6,7 +6,7 @@ This guide walks you through setting up the Hytale Server Manager development en
 
 Before you begin, make sure you have the following installed:
 
-- **Node.js** (v18 or later recommended) -- the Electron build targets ES2022
+- **Node.js** (v22 or later) -- matches the version used in CI
 - **npm** (comes with Node.js)
 - **Git**
 

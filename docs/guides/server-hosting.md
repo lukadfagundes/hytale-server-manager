@@ -23,13 +23,12 @@ winget install EclipseAdoptium.Temurin.25.JDK
 
 After installing, add Java to your PATH:
 
-```bash
-# Current session
-export PATH="/c/Program Files/Eclipse Adoptium/jdk-25.0.2.10-hotspot/bin:$PATH"
+```powershell
+# Current session (PowerShell)
+$env:Path = "C:\Program Files\Eclipse Adoptium\jdk-25.0.2.10-hotspot\bin;$env:Path"
 
-# Permanent (add to ~/.bashrc)
-echo 'export PATH="/c/Program Files/Eclipse Adoptium/jdk-25.0.2.10-hotspot/bin:$PATH"' >> ~/.bashrc
-source ~/.bashrc
+# Permanent (run as Administrator in PowerShell)
+[Environment]::SetEnvironmentVariable("Path", "C:\Program Files\Eclipse Adoptium\jdk-25.0.2.10-hotspot\bin;" + [Environment]::GetEnvironmentVariable("Path", "Machine"), "Machine")
 ```
 
 ### Verify
