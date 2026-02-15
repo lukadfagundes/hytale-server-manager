@@ -91,7 +91,7 @@ The renderer `tsconfig.json` defines a `@shared/*` path alias that resolves to `
 
 ## Running Tests
 
-The project has 17 test suites with 240+ tests using Jest 29 and ts-jest.
+The project has 17 test suites with 243 tests using Jest 29 and ts-jest.
 
 ```bash
 # Run all test suites

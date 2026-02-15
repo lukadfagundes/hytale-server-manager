@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Asset extraction pipeline: extracts item icons, NPC portraits, and map markers from Assets.zip with stamp-based cache invalidation
 - Context-isolated IPC with channel whitelist in preload bridge (30 channels: 17 invoke + 13 event)
 - 7 Zustand stores: asset, config, mod, server, toast, universe, updater
-- 17 reusable React components across layout, server, players, mods, warps, setup, and updates domains
+- 15 reusable React components across layout, server, players, mods, warps, setup, and updates domains
 - 4 page components: Dashboard, ModManager, Players, Warps
 - IPC client service with typed wrappers for all channels
 - Toast notification system with auto-dismiss
@@ -33,97 +33,94 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - NSIS installer (Windows) with desktop shortcut and portable build
 - AppImage and .deb packages (Linux)
 - Pre-commit quality gate: lint-staged (Prettier + ESLint) -> typecheck -> test
-- 17 test suites with 243 tests covering main process, data readers, stores, and utilities
 - Comprehensive documentation: architecture docs, developer guides, end-user installation guide
 - Branch naming conventions in CONTRIBUTING.md
 - MIT License
 
+### Security
+
+- Path traversal guard in asset:// protocol handler -- resolved paths validated against cache directory boundary (WO-012)
+- Input validation in mod-manager toggleMod -- mod names containing path separators or ".." are rejected before any filesystem operations (WO-012)
+- Developer config file (app-config.json) removed from git tracking and electron-builder files array, added to .gitignore (WO-012)
+- Release workflow shell injection fixed -- uses `--notes-file` instead of inline `--notes` expansion (WO-012)
+
+### Fixed
+
+- ItemIcon fetch stampede eliminated -- icon map reload deduplicated via single in-flight promise in asset-store, components subscribe to `iconMapReady` flag instead of triggering independent fetches (WO-013)
+- Refresh listener lifecycle fixed -- universe-store and mod-store listeners initialized at app scope in App.tsx instead of Dashboard-only, ensuring live data updates on all routes (WO-013)
+- UpdateNotification close button now works in 'downloaded' state -- added missing `handleClose` branch (WO-013)
+- LogPanel smart auto-scroll -- tracks scroll position and only auto-scrolls when user is near bottom, preserving ability to read history (WO-013)
+- Duplicate type definitions removed -- server-store and mod-store now import canonical types from types/ directory; server-store LogEntry.stream narrowed to 'stdout' | 'stderr' (WO-013)
+- getWarps response shape normalized -- handles both singular `error` and plural `errors` for forward compatibility (WO-013)
+- Log entries use stable unique IDs instead of array indices, preventing React DOM reuse glitches when buffer rotates (WO-013)
+- Auto-update publish configuration fixed -- electron-builder.yml and dev-app-update.yml repo changed from 'hytale-server' to 'hytale-server-manager' (WO-014)
+- Release workflow CHANGELOG URL fixed to point to correct repository (WO-014)
+- CI npm cache-dependency-path updated to include both root and app lockfiles for proper cache invalidation (WO-014)
+- Linux auto-update manifest (latest-linux.yml) generation added to release workflow (WO-014)
+- Root package.json name corrected from 'hytale-server' to 'hytale-server-manager' (WO-014)
+- Asset extraction cache validation now checks icon map file existence in addition to stamp file (WO-014)
+- Redundant disabled-mods entry removed from electron-builder files array (kept in extraFiles only) (WO-014)
+
+### Performance
+
+- Asset extraction converted to async file I/O -- fs.promises.writeFile and fs.promises.mkdir replace synchronous calls, unblocking the main process event loop (WO-015)
+- Mod reader converted to async -- getDirSizeAsync uses fs.promises.readdir and fs.promises.stat, eliminating event loop blocking for large mod directories (WO-015)
+- Granular Zustand selectors added to LogPanel, ServerToggle, and ModManager -- components only re-render when their specific state slices change (WO-015)
+- durabilityPercent computed once per item in EquipmentTree and InventoryGrid, eliminating redundant function calls (WO-015)
+
+### Code Quality
+
+- Shared formatTranslationKey utility created in shared/translation.ts -- consolidated from 3 divergent copies across player-reader, world-reader, and renderer utils (WO-016)
+- formatBytes and formatSpeed consolidated in utils/formatting.ts with GB tier support -- removed duplicate from UpdateNotification.tsx (WO-016)
+- Dead components removed: ArmorDisplay.tsx and StatsBar.tsx (superseded by EquipmentTree inline code) (WO-016)
+- Dead exports removed: readPlayerMemories, getServerConfig, SERVER_DIR, DISABLED_MODS_DIR (WO-016)
+- file-watcher.ts watcher variable typed as FSWatcher | null instead of any (WO-016)
+- React ErrorBoundary component added and wrapped around app root in App.tsx -- unhandled render errors now show a recovery UI instead of white screen (WO-016)
+- updater-service.ts refactored to broadcast to all windows via BrowserWindow.getAllWindows() instead of captured single reference (WO-016)
+- Graceful Windows server shutdown -- taskkill without /F attempted first, escalating to force-kill after 15s timeout (WO-016)
+
+### Accessibility
+
+- UpdateNotification modal: added role="dialog", aria-modal="true", aria-labelledby, and focus trap preventing keyboard users from tabbing behind the modal (WO-017)
+- ToastContainer: added aria-live="polite" and role="status" with always-render pattern for live region establishment; individual toasts have role="alert" (WO-017)
+- Keyboard tooltip access: InventoryGrid and EquipmentTree item slots now have tabIndex={0}, onFocus/onBlur handlers, and aria-label for screen readers (WO-017)
+- Collapsible controls: PlayerCard and LogPanel toggle buttons have aria-expanded attribute (WO-017)
+- Progress indicators: stat bars and durability bars have role="progressbar" with aria-valuenow, aria-valuemin, aria-valuemax, and aria-label (WO-017)
+- Error/warning banners: added role="alert" across ModManager, Players, Warps, and ServerSetup pages (WO-017)
+
+### Tests
+
+- 26 test suites with 465 tests (up from 17 suites / 243 tests)
+- New test files: preload.test.ts (36 tests), file-watcher.test.ts (17 tests), updater-service.test.ts (25 tests), server-store.test.ts (18 tests), universe-store.test.ts (24 tests), updater-store.test.ts (32 tests) (WO-011)
+- Expanded ipc-handlers.test.ts with 7 new describe blocks covering server:start, server:stop, data:world-map, and all updater:* channels (WO-011)
+- Jest collectCoverageFrom expanded to include stores, components, services, and preload (WO-011)
+- Security test coverage: 4 path traversal tests for asset:// protocol, 7 input validation tests for toggleMod (WO-012)
+- Shared translation utility tests (8 tests), formatting utility tests (8 tests), ErrorBoundary tests (2 tests) (WO-016)
+
+### Documentation
+
+- Node.js prerequisites updated from 18+ to 22+ in README.md and getting-started.md (WO-018)
+- installation.md linked from docs/README.md and root README.md navigation (WO-018)
+- packaging.md Release Workflow section rewritten to document automated release.yml CI pipeline (WO-018)
+- IPC contract consistently documented as 4-file update across CONTRIBUTING.md and ipc-channel-map.md (WO-018)
+- CONTRIBUTING.md branch references updated from dev to main (WO-018)
+- server-hosting.md Windows section fixed to use PowerShell syntax instead of bash (WO-018)
+- New module documentation: docs/modules/ with 6 detailed module docs (asset-extractor, file-watcher, ipc-client, server-process, server-store, universe-store)
+
 ### Architecture
 
 - **Main Process (12 modules):** index.ts, asset-extractor.ts, file-watcher.ts, ipc-handlers.ts, mod-manager.ts, server-path.ts, server-process.ts, updater-service.ts, and 4 data readers (player, warp, world, mod)
-- **Renderer (25 files):** App.tsx, 4 pages, 17 components, IPC client service
-- **State Management (7 stores):** Zustand with cross-store toast communication pattern
+- **Renderer (23 files):** App.tsx, ErrorBoundary.tsx, 4 pages, 15 components, IPC client service
+- **State Management (7 stores):** Zustand with cross-store toast communication pattern and granular selectors
 - **Type System (5 type files):** player.ts, server.ts, mod.ts, warp.ts, world.ts
 - **Utilities (3 files):** asset-paths.ts, formatting.ts, translation.ts
-- **Shared:** constants.ts with IPC channel name registry
+- **Shared (2 files):** constants.ts (IPC channel name registry), translation.ts (shared utility)
 
 ### Known Issues
 
-#### Security
-
-- Path traversal possible in asset:// protocol handler -- decoded URL joined to cache directory without bounds check after resolution
-- Path traversal possible in mod-manager toggleMod -- modName from IPC used unsanitized in path.join
-- app-config.json committed to git with developer filesystem path (contains username, non-portable)
-- Release workflow inline expansion of CHANGELOG content is vulnerable to shell injection via backticks or $()
-
-#### Bugs
-
-- ItemIcon fetch stampede: all visible ItemIcon components independently call reloadIconMap() when asset status becomes 'ready', causing N simultaneous fetches
-- UpdateNotification close button does nothing in 'downloaded' state (no handleClose branch for it)
-- Universe/mod refresh listeners initialized only in Dashboard useEffect -- navigating directly to /players or /warps skips listener setup
-- LogPanel auto-scroll always jumps to bottom even when user has scrolled up to read older entries
-- Duplicate type definitions in stores: mod-store.ts and server-store.ts redefine types locally instead of importing from types/; server-store LogEntry.stream is weaker string type vs canonical 'stdout' | 'stderr'
-- getWarps response shape inconsistency in ipc-client.ts (singular error vs plural errors) -- could silently drop errors if main process is refactored
-- Log entries use index-based keys that shift as the 1000-entry buffer fills
-
-#### Build/Configuration
-
-- electron-builder.yml publish repo is 'hytale-server' -- must be 'hytale-server-manager' for auto-updates to work
-- dev-app-update.yml has same repo name mismatch
-- Release workflow CHANGELOG URL points to wrong repository
-- No CHANGELOG.md existed (now created)
-- app-config.json bundled into distributed builds via electron-builder files array
-- CI npm cache-dependency-path points to app/package-lock.json but npm ci runs from root package-lock.json
-- No latest-linux.yml generated in release workflow -- Linux auto-updates will not work
-- Root package.json name is 'hytale-server', should be 'hytale-server-manager'
-- extract-assets.js cache validation only checks stamp file, not icon map content
-- buildResources: build directory does not exist (no custom installer branding)
-- disabled-mods listed redundantly in both files and extraFiles in electron-builder.yml
-
-#### Performance
-
-- Synchronous file I/O in asset-extractor.ts (writeFileSync in extraction loop) blocks main process
-- Recursive synchronous getDirSize in mod-reader.ts blocks event loop for large mod directories
-- Multiple store subscriptions without selectors cause unnecessary re-renders (LogPanel, ServerToggle, ModManager)
-- durabilityPercent() called 3 times per item in EquipmentTree and InventoryGrid
-
-#### Code Quality
-
-- formatTranslationKey duplicated 3 times with divergent logic across player-reader.ts, world-reader.ts, and renderer/utils/translation.ts
-- formatBytes duplicated in UpdateNotification.tsx vs utils/formatting.ts with different implementations
-- Dead components: ArmorDisplay.tsx and StatsBar.tsx are not imported anywhere
-- Dead exports: readPlayerMemories in player-reader.ts, getServerConfig in ipc-client.ts, SERVER_DIR and DISABLED_MODS_DIR in constants.ts
-- file-watcher.ts uses any type for watcher variable
-- Pervasive unsafe 'as' casts in ipc-client.ts with no runtime validation
-- No React error boundary for crash recovery
-- updater-service.ts broadcasts only to captured window reference, not BrowserWindow.getAllWindows()
-- Windows server shutdown uses taskkill /F (force) immediately, bypassing graceful shutdown
-
-#### Accessibility
-
-- No focus trap, role="dialog", or aria-modal in UpdateNotification modal
-- No role="alert" or aria-live on ToastContainer
-- No keyboard access to inventory/equipment tooltips
-- No aria-expanded on collapsible controls (PlayerCard, LogPanel)
-- No role="progressbar" on stat bars and durability bars
-- Error/warning banners lack role="alert" across multiple pages
-
-#### Test Coverage Gaps
-
-- No tests for: file-watcher.ts, updater-service.ts, preload/index.ts (security boundary)
-- No tests for 3 of 7 Zustand stores: server-store, universe-store, updater-store
-- 4 IPC channels untested in ipc-handlers.test.ts: server:start, server:stop, data:world-map, updater:*
-- Jest coverage collection excludes stores and components from reporting
+- Pervasive unsafe `as` casts in ipc-client.ts with no runtime validation
+- `buildResources: build` directory does not exist (no custom installer branding)
 - No integration, E2E, or visual tests
-
-#### Documentation
-
-- Prerequisites recommend Node.js 18+ but CI requires Node 22 (Node 18 is EOL)
-- installation.md not linked from docs/README.md or root README.md
-- packaging.md describes manual release process but automated release.yml workflow exists
-- Three-file vs four-file IPC contract described inconsistently across docs
-- CONTRIBUTING.md references dev branch that may not exist yet
-- server-hosting.md uses bash syntax (export PATH) in Windows section
 
 ## [0.0.2] - 2026-02-14
 

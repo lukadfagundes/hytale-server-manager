@@ -36,15 +36,16 @@ on(channel, callback)     // gated by ALLOWED_ON_CHANNELS
 
 Any channel string not present in the corresponding whitelist array throws an error at runtime. This prevents arbitrary IPC access from the renderer.
 
-## The Three-File Contract
+## The Four-File Contract
 
-Every IPC channel must be defined in three files. Missing any one of them causes silent failures or runtime errors.
+Every IPC channel must be defined in four files. Missing any one of them causes silent failures or runtime errors.
 
 | File | Purpose |
 |------|---------|
 | `app/src/shared/constants.ts` | Single source of truth for channel name strings |
 | `app/src/preload/index.ts` | Whitelist arrays that gate access |
-| `app/src/main/ipc-handlers.ts` or `app/src/renderer/services/ipc-client.ts` | Handler registration or typed client wrapper |
+| `app/src/main/ipc-handlers.ts` | Handler registration (main process) |
+| `app/src/renderer/services/ipc-client.ts` | Typed client wrapper (renderer process) |
 
 ## Adding a New Invoke Channel
 

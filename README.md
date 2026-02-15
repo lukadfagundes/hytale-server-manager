@@ -87,7 +87,7 @@ hytale-server-manager/
 │   │   │   └── updater-service.ts# Auto-update via GitHub Releases
 │   │   ├── renderer/             # React frontend
 │   │   │   ├── pages/            # Dashboard, Players, Warps, ModManager
-│   │   │   ├── components/       # 17 reusable components
+│   │   │   ├── components/       # 18 reusable components
 │   │   │   ├── stores/           # 7 Zustand state stores
 │   │   │   ├── services/         # IPC client wrapper
 │   │   │   └── utils/            # Asset paths, formatting, translation

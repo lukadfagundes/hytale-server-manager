@@ -1,6 +1,6 @@
 # Component Hierarchy
 
-The Hytale Server Manager renderer is a React 19 single-page application with 4 page components and 17 reusable components organized across 7 domain directories. The root `App` component gates the entire UI on the server path configuration status before rendering the main application shell with `HashRouter`.
+The Hytale Server Manager renderer is a React 19 single-page application with 4 page components and 18 reusable components organized across 8 domain directories. The root `App` component gates the entire UI on the server path configuration status before rendering the main application shell with `HashRouter`.
 
 **Related Documents:**
 - [Type Definitions](type-definitions.md) -- TypeScript interfaces consumed by components and stores (PlayerData, ModInfo, Warp, WorldMapData, ServerStatus)
@@ -38,10 +38,6 @@ graph TD
 
     EQUIP --> EQUIP_ICON["ItemIcon"]
     EQUIP --> EQUIP_TIP["ItemTooltip"]
-    EQUIP --> STATSBAR["StatsBar"]
-    EQUIP --> ARMOR["ArmorDisplay"]
-
-    ARMOR --> ARMOR_ICON["ItemIcon"]
 
     INVGRID --> INV_ICON["ItemIcon"]
     INVGRID --> INV_TIP["ItemTooltip"]
@@ -92,12 +88,16 @@ graph TD
 | Component | File | Purpose | Stores Used |
 |-----------|------|---------|-------------|
 | `PlayerCard` | `PlayerCard.tsx` | Expandable card per player showing name, game mode, world. Expands to show `EquipmentTree` and `InventoryGrid` sections. | None (receives props) |
-| `EquipmentTree` | `EquipmentTree.tsx` | Combined equipment + stats + location panel. Shows armor slots, utility/tool items, stat bars (health, mana, hunger), coordinates, respawn points, death markers, discovered zones. | None (receives props) |
-| `ArmorDisplay` | `ArmorDisplay.tsx` | Renders 4 armor slots (Head, Chest, Hands, Legs) with item icons and durability. | None (receives props) |
+| `EquipmentTree` | `EquipmentTree.tsx` | Combined equipment + stats + location panel. Shows armor slots (via internal `EquipmentSlot` function), utility/tool items, stat bars (via internal `StatRow` function for health, stamina, mana, oxygen), coordinates, respawn points, death markers, discovered zones. | None (receives props) |
 | `InventoryGrid` | `InventoryGrid.tsx` | Grid layout for inventory sections (Hotbar 9-slot, Backpack 9-slot, Storage 36-slot). Supports hover tooltips. | None (receives props) |
 | `ItemIcon` | `ItemIcon.tsx` | Loads item icon via `asset:///items/{name}.png` URL. Watches `asset-store` status to reload icon map when assets become ready. Falls back to text label on image load error. | `asset-store` |
 | `ItemTooltip` | `ItemTooltip.tsx` | Positioned tooltip overlay showing item name, quantity, and durability when hovering an inventory slot. | None (receives props) |
-| `StatsBar` | `StatsBar.tsx` | Horizontal bar with label, fill percentage, and numeric value. Used for health, mana, hunger, and similar stats. | None (receives props) |
+
+### Error Handling Components (`components/`)
+
+| Component | File | Purpose | Stores Used |
+|-----------|------|---------|-------------|
+| `ErrorBoundary` | `ErrorBoundary.tsx` | React class component that catches JavaScript errors in child component tree, logs errors, and displays a fallback UI with reload button. Prevents app crashes from propagating. | None (class component with internal state) |
 
 ### Mod Components (`components/mods/`)
 
