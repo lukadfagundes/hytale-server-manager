@@ -59,10 +59,10 @@ function isUpToDate(zipPath: string): boolean {
   }
 }
 
-function writeStamp(zipPath: string): void {
+async function writeStamp(zipPath: string): Promise<void> {
   const stampPath = path.join(getAssetCacheDir(), STAMP_FILE);
   const zipMtime = String(fs.statSync(zipPath).mtimeMs);
-  fs.writeFileSync(stampPath, zipMtime);
+  await fs.promises.writeFile(stampPath, zipMtime);
 }
 
 async function buildItemIconMap(
@@ -92,7 +92,7 @@ async function buildItemIconMap(
     }
   }
 
-  fs.writeFileSync(path.join(cacheDir, ICON_MAP_FILE), JSON.stringify(map));
+  await fs.promises.writeFile(path.join(cacheDir, ICON_MAP_FILE), JSON.stringify(map));
 }
 
 async function doExtract(serverDir: string): Promise<ExtractionResult> {
@@ -107,7 +107,7 @@ async function doExtract(serverDir: string): Promise<ExtractionResult> {
   }
 
   const cacheDir = getAssetCacheDir();
-  fs.mkdirSync(cacheDir, { recursive: true });
+  await fs.promises.mkdir(cacheDir, { recursive: true });
 
   const zip = new StreamZip.async({ file: zipPath });
   let totalFiles = 0;
@@ -117,14 +117,14 @@ async function doExtract(serverDir: string): Promise<ExtractionResult> {
 
     for (const { zipPrefix, outSubdir } of EXTRACTIONS) {
       const dest = path.join(cacheDir, outSubdir);
-      fs.mkdirSync(dest, { recursive: true });
+      await fs.promises.mkdir(dest, { recursive: true });
 
       for (const entry of Object.values(entries)) {
         if (entry.name.startsWith(zipPrefix) && entry.name.toLowerCase().endsWith('.png')) {
           const filename = path.basename(entry.name);
           if (!filename) continue;
           const data = await zip.entryData(entry.name);
-          fs.writeFileSync(path.join(dest, filename), data);
+          await fs.promises.writeFile(path.join(dest, filename), data);
           totalFiles++;
         }
       }
@@ -132,7 +132,7 @@ async function doExtract(serverDir: string): Promise<ExtractionResult> {
 
     await buildItemIconMap(zip, entries);
     await zip.close();
-    writeStamp(zipPath);
+    await writeStamp(zipPath);
 
     return { success: true, totalFiles };
   } catch (err) {

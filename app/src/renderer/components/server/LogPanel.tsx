@@ -102,7 +102,8 @@ const LogRow = memo(function LogRow({ entry }: { entry: StoreLogEntry }) {
 const SCROLL_THRESHOLD = 50;
 
 export default function LogPanel() {
-  const { logs, clearLogs } = useServerStore();
+  const logs = useServerStore((s) => s.logs);
+  const clearLogs = useServerStore((s) => s.clearLogs);
   const [expanded, setExpanded] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   // Track whether user is near the bottom; start true so initial logs scroll into view

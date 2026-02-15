@@ -1,7 +1,9 @@
 import { useServerStore } from '../../stores/server-store';
 
 export default function ServerToggle() {
-  const { status, start, stop } = useServerStore();
+  const status = useServerStore((s) => s.status);
+  const start = useServerStore((s) => s.start);
+  const stop = useServerStore((s) => s.stop);
   const isTransitioning = status === 'starting' || status === 'stopping';
   const isRunning = status === 'running';
 

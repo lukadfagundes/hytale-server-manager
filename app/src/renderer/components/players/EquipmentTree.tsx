@@ -52,20 +52,20 @@ function EquipmentSlot({
           <div className="w-16 h-16 p-0.5">
             <ItemIcon itemId={item.id} />
           </div>
-          {item.maxDurability > 0 && (
-            <div className="absolute bottom-0.5 left-1 right-1 h-1 bg-hytale-darker rounded-full">
-              <div
-                className={`h-full rounded-full ${
-                  durabilityPercent(item.durability, item.maxDurability) > 50
-                    ? 'bg-green-500'
-                    : durabilityPercent(item.durability, item.maxDurability) > 20
-                      ? 'bg-yellow-500'
-                      : 'bg-red-500'
-                }`}
-                style={{ width: `${durabilityPercent(item.durability, item.maxDurability)}%` }}
-              />
-            </div>
-          )}
+          {item.maxDurability > 0 &&
+            (() => {
+              const pct = durabilityPercent(item.durability, item.maxDurability);
+              return (
+                <div className="absolute bottom-0.5 left-1 right-1 h-1 bg-hytale-darker rounded-full">
+                  <div
+                    className={`h-full rounded-full ${
+                      pct > 50 ? 'bg-green-500' : pct > 20 ? 'bg-yellow-500' : 'bg-red-500'
+                    }`}
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+              );
+            })()}
         </>
       ) : (
         <span className="text-[9px] text-hytale-muted/40">{label}</span>

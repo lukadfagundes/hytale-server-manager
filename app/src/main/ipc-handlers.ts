@@ -71,7 +71,7 @@ export function registerIpcHandlers(): void {
   });
 
   ipcMain.handle(IPC.MODS_LIST, async () => {
-    const result = readAllMods(getServerDir(), getDisabledModsDir());
+    const result = await readAllMods(getServerDir(), getDisabledModsDir());
     return { data: result.data, errors: result.errors };
   });
 

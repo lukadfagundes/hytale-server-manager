@@ -4,7 +4,11 @@ import { useServerStore } from '../stores/server-store';
 import ModCard from '../components/mods/ModCard';
 
 export default function ModManager() {
-  const { mods, loading, error, fetchMods, toggleMod } = useModStore();
+  const mods = useModStore((s) => s.mods);
+  const loading = useModStore((s) => s.loading);
+  const error = useModStore((s) => s.error);
+  const fetchMods = useModStore((s) => s.fetchMods);
+  const toggleMod = useModStore((s) => s.toggleMod);
   const serverStatus = useServerStore((s) => s.status);
   const isServerRunning = serverStatus === 'running' || serverStatus === 'starting';
 

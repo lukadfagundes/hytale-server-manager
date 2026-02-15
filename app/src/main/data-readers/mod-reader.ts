@@ -14,16 +14,17 @@ export interface ModsResult {
   errors: string[];
 }
 
-function getDirSize(dirPath: string): number {
+async function getDirSizeAsync(dirPath: string): Promise<number> {
   let size = 0;
   try {
-    const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+    const entries = await fs.promises.readdir(dirPath, { withFileTypes: true });
     for (const entry of entries) {
       const fullPath = path.join(dirPath, entry.name);
       if (entry.isFile()) {
-        size += fs.statSync(fullPath).size;
+        const stat = await fs.promises.stat(fullPath);
+        size += stat.size;
       } else if (entry.isDirectory()) {
-        size += getDirSize(fullPath);
+        size += await getDirSizeAsync(fullPath);
       }
     }
   } catch {
@@ -32,19 +33,22 @@ function getDirSize(dirPath: string): number {
   return size;
 }
 
-function scanModsDir(modsDir: string, enabled: boolean): { mods: ModInfo[]; error: string | null } {
+async function scanModsDir(
+  modsDir: string,
+  enabled: boolean
+): Promise<{ mods: ModInfo[]; error: string | null }> {
   const mods: ModInfo[] = [];
 
   try {
-    const entries = fs.readdirSync(modsDir, { withFileTypes: true });
+    const entries = await fs.promises.readdir(modsDir, { withFileTypes: true });
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;
       const modPath = path.join(modsDir, entry.name);
 
       let hasStateFile = false;
       try {
-        const modFiles = fs.readdirSync(modPath);
-        hasStateFile = modFiles.some(f => f.endsWith('.json'));
+        const modFiles = await fs.promises.readdir(modPath);
+        hasStateFile = modFiles.some((f) => f.endsWith('.json'));
       } catch {
         // Can't read mod directory contents
       }
@@ -54,7 +58,7 @@ function scanModsDir(modsDir: string, enabled: boolean): { mods: ModInfo[]; erro
         enabled,
         path: modPath,
         hasStateFile,
-        sizeBytes: getDirSize(modPath),
+        sizeBytes: await getDirSizeAsync(modPath),
       });
     }
     return { mods, error: null };
@@ -63,14 +67,17 @@ function scanModsDir(modsDir: string, enabled: boolean): { mods: ModInfo[]; erro
     if (code === 'ENOENT') {
       return { mods: [], error: null }; // Directory not existing is normal
     }
-    return { mods: [], error: `Failed to read mods directory ${modsDir}: ${(err as Error).message}` };
+    return {
+      mods: [],
+      error: `Failed to read mods directory ${modsDir}: ${(err as Error).message}`,
+    };
   }
 }
 
-export function readAllMods(serverDir: string, disabledModsDir: string): ModsResult {
+export async function readAllMods(serverDir: string, disabledModsDir: string): Promise<ModsResult> {
   const enabledDir = path.join(serverDir, 'mods');
-  const enabled = scanModsDir(enabledDir, true);
-  const disabled = scanModsDir(disabledModsDir, false);
+  const enabled = await scanModsDir(enabledDir, true);
+  const disabled = await scanModsDir(disabledModsDir, false);
 
   const errors: string[] = [];
   if (enabled.error) errors.push(enabled.error);

@@ -4,7 +4,21 @@ jest.mock('electron', () => ({
   },
 }));
 
-jest.mock('fs');
+jest.mock('fs', () => {
+  const actual = jest.requireActual('fs');
+  return {
+    ...actual,
+    existsSync: jest.fn(),
+    statSync: jest.fn(),
+    readFileSync: jest.fn(),
+    mkdirSync: jest.fn(),
+    writeFileSync: jest.fn(),
+    promises: {
+      mkdir: jest.fn().mockResolvedValue(undefined),
+      writeFile: jest.fn().mockResolvedValue(undefined),
+    },
+  };
+});
 jest.mock('node-stream-zip');
 
 import fs from 'fs';
@@ -12,6 +26,7 @@ import path from 'path';
 import StreamZip from 'node-stream-zip';
 
 const mockFs = jest.mocked(fs);
+const mockFsPromises = jest.mocked(fs.promises);
 
 describe('asset-extractor', () => {
   beforeEach(() => {
@@ -112,8 +127,8 @@ describe('asset-extractor', () => {
       mockFs.readFileSync.mockImplementation(() => {
         throw new Error('ENOENT');
       });
-      mockFs.mkdirSync.mockReturnValue(undefined);
-      mockFs.writeFileSync.mockReturnValue(undefined);
+      mockFsPromises.mkdir.mockResolvedValue(undefined);
+      mockFsPromises.writeFile.mockResolvedValue(undefined);
 
       // Mock StreamZip
       const mockEntryData = jest.fn().mockResolvedValue(Buffer.from('PNG data'));
@@ -136,8 +151,8 @@ describe('asset-extractor', () => {
 
       expect(result.success).toBe(true);
       expect(result.totalFiles).toBe(2);
-      expect(mockFs.mkdirSync).toHaveBeenCalled();
-      expect(mockFs.writeFileSync).toHaveBeenCalled();
+      expect(mockFsPromises.mkdir).toHaveBeenCalled();
+      expect(mockFsPromises.writeFile).toHaveBeenCalled();
       expect(mockClose).toHaveBeenCalled();
     });
 
@@ -151,7 +166,7 @@ describe('asset-extractor', () => {
       mockFs.readFileSync.mockImplementation(() => {
         throw new Error('ENOENT');
       });
-      mockFs.mkdirSync.mockReturnValue(undefined);
+      mockFsPromises.mkdir.mockResolvedValue(undefined);
 
       (StreamZip as unknown as { async: jest.Mock }).async = jest.fn().mockImplementation(() => ({
         entries: jest.fn().mockRejectedValue(new Error('Corrupt zip')),
@@ -175,8 +190,8 @@ describe('asset-extractor', () => {
       mockFs.readFileSync.mockImplementation(() => {
         throw new Error('ENOENT');
       });
-      mockFs.mkdirSync.mockReturnValue(undefined);
-      mockFs.writeFileSync.mockReturnValue(undefined);
+      mockFsPromises.mkdir.mockResolvedValue(undefined);
+      mockFsPromises.writeFile.mockResolvedValue(undefined);
 
       const mockEntries = jest.fn().mockResolvedValue({});
       const mockClose = jest.fn().mockResolvedValue(undefined);
