@@ -10,6 +10,8 @@ import Dashboard from './pages/Dashboard';
 import ModManager from './pages/ModManager';
 import Players from './pages/Players';
 import Warps from './pages/Warps';
+import Docs from './pages/Docs';
+import './utils/docs-loader';
 import { useUpdaterStore } from './stores/updater-store';
 import { useConfigStore } from './stores/config-store';
 import { useAssetStore } from './stores/asset-store';
@@ -68,6 +70,7 @@ export default function App() {
                 <Route path="/mods" element={<ModManager />} />
                 <Route path="/players" element={<Players />} />
                 <Route path="/warps" element={<Warps />} />
+                <Route path="/docs/*" element={<Docs />} />
               </Routes>
             </main>
           </div>

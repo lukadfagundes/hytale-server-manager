@@ -17,7 +17,7 @@ export default function Sidebar() {
         <h1 className="text-lg font-bold text-hytale-highlight">HSM</h1>
         <p className="text-xs text-hytale-muted">Server Manager</p>
       </div>
-      <nav className="flex-1 py-2">
+      <nav aria-label="Main" className="flex-1 py-2">
         {navItems.map((item) => (
           <NavLink
             key={item.path}
@@ -35,6 +35,21 @@ export default function Sidebar() {
             <span>{item.label}</span>
           </NavLink>
         ))}
+      </nav>
+      <nav aria-label="Documentation" className="py-2 border-t border-hytale-accent/30">
+        <NavLink
+          to="/docs"
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-4 py-3 text-sm transition-colors ${
+              isActive
+                ? 'bg-hytale-accent/40 text-hytale-text border-r-2 border-hytale-highlight'
+                : 'text-hytale-muted hover:text-hytale-text hover:bg-hytale-accent/20'
+            }`
+          }
+        >
+          <span className="w-5 text-center font-mono">?</span>
+          <span>Docs</span>
+        </NavLink>
       </nav>
       <div className="p-4 border-t border-hytale-accent/30">
         <p className="text-xs text-hytale-muted">v{appVersion}</p>
