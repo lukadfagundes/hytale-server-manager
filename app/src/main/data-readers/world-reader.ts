@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { formatTranslationKey } from '../../shared/translation';
 
 export interface RegionInfo {
   x: number;
@@ -28,23 +29,27 @@ export interface WorldMapResult {
   errors: string[];
 }
 
-function formatTranslationKey(key: string): string {
-  const parts = key.split('.');
-  const meaningful = parts.length >= 3 ? parts[parts.length - 2] : parts[parts.length - 1];
-  return meaningful.replace(/_/g, ' ');
-}
-
 export function readWorldMap(
   serverDir: string,
   playerPositions: { name: string; position: { x: number; y: number; z: number } }[],
-  warpPositions: { name: string; position: { x: number; y: number; z: number } }[],
+  warpPositions: { name: string; position: { x: number; y: number; z: number } }[]
 ): WorldMapResult {
   const chunksDir = path.join(serverDir, 'universe', 'worlds', 'default', 'chunks');
-  const markersPath = path.join(serverDir, 'universe', 'worlds', 'default', 'resources', 'BlockMapMarkers.json');
+  const markersPath = path.join(
+    serverDir,
+    'universe',
+    'worlds',
+    'default',
+    'resources',
+    'BlockMapMarkers.json'
+  );
 
   const regions: RegionInfo[] = [];
   const errors: string[] = [];
-  let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+  let minX = Infinity,
+    maxX = -Infinity,
+    minZ = Infinity,
+    maxZ = -Infinity;
 
   // Read region files
   try {
@@ -60,7 +65,8 @@ export function readWorldMap(
       try {
         const stat = fs.statSync(path.join(chunksDir, file));
         regions.push({
-          x, z,
+          x,
+          z,
           sizeBytes: stat.size,
           lastModified: stat.mtimeMs,
         });

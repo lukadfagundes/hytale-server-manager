@@ -1,11 +1,11 @@
 import path from 'path';
 import { BrowserWindow } from 'electron';
+import type { FSWatcher } from 'chokidar';
 import { IPC } from '../shared/constants';
 
 type RefreshCategory = 'players' | 'warps' | 'worldMap' | 'mods';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let watcher: any = null;
+let watcher: FSWatcher | null = null;
 let debounceTimers: Record<string, ReturnType<typeof setTimeout>> = {};
 
 const DEBOUNCE_MS = 500;
@@ -61,7 +61,7 @@ export async function startWatcher(serverDir: string): Promise<void> {
     awaitWriteFinish: { stabilityThreshold: 300 },
     ignored: [
       /(^|[/\\])\../, // dotfiles
-      /\.bak$/,       // backup files
+      /\.bak$/, // backup files
     ],
   });
 
@@ -72,8 +72,8 @@ export async function startWatcher(serverDir: string): Promise<void> {
     }
   });
 
-  watcher.on('error', (err: Error) => {
-    console.error('[FileWatcher] Error:', err.message);
+  watcher.on('error', (err: unknown) => {
+    console.error('[FileWatcher] Error:', err instanceof Error ? err.message : String(err));
   });
 }
 

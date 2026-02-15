@@ -8,6 +8,7 @@ import type {
   DeathMarker,
 } from '../../types/player';
 import { durabilityPercent, formatCoords } from '../../utils/formatting';
+import { formatItemId } from '../../utils/translation';
 import ItemIcon from './ItemIcon';
 import ItemTooltip from './ItemTooltip';
 
@@ -34,9 +35,11 @@ function EquipmentSlot({
 }: {
   item: InventorySlot | null;
   label: string;
-  onHover: (e: React.MouseEvent, item: InventorySlot) => void;
+  onHover: (e: React.MouseEvent | React.FocusEvent, item: InventorySlot) => void;
   onLeave: () => void;
 }) {
+  const ariaLabel = item ? `${label}: ${formatItemId(item.id)}` : label;
+
   return (
     <div
       className={`w-20 h-20 rounded-lg border flex items-center justify-center relative ${
@@ -44,8 +47,12 @@ function EquipmentSlot({
           ? 'border-hytale-accent/50 bg-hytale-darker shadow-inner'
           : 'border-hytale-accent/20 bg-hytale-darker/50'
       }`}
+      tabIndex={item ? 0 : undefined}
+      aria-label={ariaLabel}
       onMouseEnter={item ? (e) => onHover(e, item) : undefined}
       onMouseLeave={onLeave}
+      onFocus={item ? (e) => onHover(e, item) : undefined}
+      onBlur={onLeave}
     >
       {item ? (
         <>
@@ -56,7 +63,14 @@ function EquipmentSlot({
             (() => {
               const pct = durabilityPercent(item.durability, item.maxDurability);
               return (
-                <div className="absolute bottom-0.5 left-1 right-1 h-1 bg-hytale-darker rounded-full">
+                <div
+                  className="absolute bottom-0.5 left-1 right-1 h-1 bg-hytale-darker rounded-full"
+                  role="progressbar"
+                  aria-valuenow={Math.round(pct)}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label="Durability"
+                >
                   <div
                     className={`h-full rounded-full ${
                       pct > 50 ? 'bg-green-500' : pct > 20 ? 'bg-yellow-500' : 'bg-red-500'
@@ -89,7 +103,14 @@ function StatRow({
     <div className="flex items-center gap-2">
       <span className="text-xs w-3 text-center">{icon}</span>
       <span className="text-[10px] text-hytale-muted w-12">{label}</span>
-      <div className="flex-1 bg-hytale-darker rounded-full h-2 overflow-hidden">
+      <div
+        className="flex-1 bg-hytale-darker rounded-full h-2 overflow-hidden"
+        role="progressbar"
+        aria-valuenow={Math.round(value)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={label}
+      >
         <div
           className={`h-full rounded-full ${color}`}
           style={{ width: `${Math.min(100, value)}%` }}
@@ -116,7 +137,7 @@ export default function EquipmentTree({
     null
   );
 
-  function handleHover(e: React.MouseEvent, item: InventorySlot) {
+  function handleHover(e: React.MouseEvent | React.FocusEvent, item: InventorySlot) {
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     setHovered({ item, x: rect.left + rect.width / 2, y: rect.top });
   }

@@ -19,7 +19,10 @@ export default function Players() {
       </div>
 
       {playerErrors.length > 0 && (
-        <div className="bg-red-900/20 border border-red-500/30 rounded-lg px-4 py-3 text-sm text-red-300 space-y-1">
+        <div
+          role="alert"
+          className="bg-red-900/20 border border-red-500/30 rounded-lg px-4 py-3 text-sm text-red-300 space-y-1"
+        >
           {playerErrors.map((err, i) => (
             <p key={i}>{err}</p>
           ))}

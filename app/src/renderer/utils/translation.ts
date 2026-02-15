@@ -1,13 +1,5 @@
-/**
- * Extract a readable name from a Hytale i18n translation key.
- * e.g. 'server.npcRoles.Goblin_Hermit.name' → 'Goblin Hermit'
- * e.g. 'server.map.region.Zone3_Tier1' → 'Zone3 Tier1'
- */
-export function formatTranslationKey(key: string): string {
-  const parts = key.split('.');
-  const meaningful = parts.length >= 3 ? parts[parts.length - 2] : parts[parts.length - 1];
-  return meaningful.replace(/_/g, ' ');
-}
+// Re-export from shared module for renderer compatibility
+export { formatTranslationKey } from '@shared/translation';
 
 /**
  * Format a Hytale item ID into a readable name.

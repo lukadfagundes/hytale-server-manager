@@ -2,11 +2,11 @@ import { autoUpdater } from 'electron-updater';
 import { app, BrowserWindow } from 'electron';
 import { IPC } from '../shared/constants';
 
-let win: BrowserWindow | null = null;
-
 function send(channel: string, ...args: unknown[]) {
-  if (win && !win.isDestroyed()) {
-    win.webContents.send(channel, ...args);
+  for (const win of BrowserWindow.getAllWindows()) {
+    if (!win.isDestroyed()) {
+      win.webContents.send(channel, ...args);
+    }
   }
 }
 
@@ -21,10 +21,8 @@ function extractReleaseNotes(
   return undefined;
 }
 
-export function initialize(mainWindow: BrowserWindow): void {
+export function initialize(): void {
   if (!app.isPackaged) return;
-
-  win = mainWindow;
 
   autoUpdater.autoDownload = false;
   autoUpdater.autoInstallOnAppQuit = true;
@@ -37,7 +35,9 @@ export function initialize(mainWindow: BrowserWindow): void {
     send(IPC.UPDATER_AVAILABLE, {
       version: info.version,
       releaseDate: info.releaseDate,
-      releaseNotes: extractReleaseNotes(info.releaseNotes as string | { version: string; note: string }[] | null),
+      releaseNotes: extractReleaseNotes(
+        info.releaseNotes as string | { version: string; note: string }[] | null
+      ),
     });
   });
 
@@ -58,7 +58,9 @@ export function initialize(mainWindow: BrowserWindow): void {
     send(IPC.UPDATER_DOWNLOADED, {
       version: info.version,
       releaseDate: info.releaseDate,
-      releaseNotes: extractReleaseNotes(info.releaseNotes as string | { version: string; note: string }[] | null),
+      releaseNotes: extractReleaseNotes(
+        info.releaseNotes as string | { version: string; note: string }[] | null
+      ),
     });
   });
 

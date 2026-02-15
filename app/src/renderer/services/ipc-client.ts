@@ -54,10 +54,6 @@ export async function getWorldMap(): Promise<DataResult<WorldMapData>> {
   return { data: result.data, errors: result.errors };
 }
 
-export async function getServerConfig(): Promise<Record<string, unknown>> {
-  return (await window.electronAPI.invoke('data:server-config')) as Record<string, unknown>;
-}
-
 export async function getMods(): Promise<DataResult<ModInfo[]>> {
   const result = (await window.electronAPI.invoke('mods:list')) as {
     data: ModInfo[];

@@ -1,4 +1,10 @@
-import { formatCoords, formatDate, formatBytes, formatDurability, durabilityPercent } from '../../renderer/utils/formatting';
+import {
+  formatCoords,
+  formatDate,
+  formatBytes,
+  formatDurability,
+  durabilityPercent,
+} from '../../renderer/utils/formatting';
 
 describe('formatCoords', () => {
   it('should format coordinates with 1 decimal place', () => {
@@ -40,7 +46,7 @@ describe('formatDate', () => {
 
 describe('formatBytes', () => {
   it('should format bytes below 1KB', () => {
-    expect(formatBytes(500)).toBe('500 B');
+    expect(formatBytes(500)).toBe('500.0 B');
   });
 
   it('should format 0 bytes', () => {
@@ -64,7 +70,12 @@ describe('formatBytes', () => {
   });
 
   it('should format 1023 bytes as B', () => {
-    expect(formatBytes(1023)).toBe('1023 B');
+    expect(formatBytes(1023)).toBe('1023.0 B');
+  });
+
+  it('should format gigabytes', () => {
+    expect(formatBytes(1024 * 1024 * 1024)).toBe('1.0 GB');
+    expect(formatBytes(2.5 * 1024 * 1024 * 1024)).toBe('2.5 GB');
   });
 });
 

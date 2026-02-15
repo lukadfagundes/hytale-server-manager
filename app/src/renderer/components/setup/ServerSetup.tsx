@@ -7,18 +7,14 @@ export default function ServerSetup() {
     <div className="flex h-screen items-center justify-center bg-hytale-darker">
       <div className="w-full max-w-lg mx-4">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-hytale-highlight mb-2">
-            Hytale Server Manager
-          </h1>
+          <h1 className="text-3xl font-bold text-hytale-highlight mb-2">Hytale Server Manager</h1>
           <p className="text-hytale-muted text-sm">
             Select your Hytale Server directory to get started
           </p>
         </div>
 
         <div className="bg-hytale-dark rounded-lg border border-hytale-accent/30 p-6">
-          <h2 className="text-lg font-semibold text-hytale-text mb-4">
-            Server Directory
-          </h2>
+          <h2 className="text-lg font-semibold text-hytale-text mb-4">Server Directory</h2>
           <p className="text-sm text-hytale-muted mb-6">
             Browse to the folder containing your HytaleServer.jar and config.json files.
           </p>
@@ -33,10 +29,14 @@ export default function ServerSetup() {
           {selectedPath && (
             <div className="mt-4">
               <div className="flex items-start gap-2 bg-hytale-darker rounded px-3 py-2 border border-hytale-accent/20">
-                <span className={`mt-0.5 text-xs ${selectedValid ? 'text-green-400' : 'text-yellow-400'}`}>
+                <span
+                  className={`mt-0.5 text-xs ${selectedValid ? 'text-green-400' : 'text-yellow-400'}`}
+                >
                   {selectedValid ? 'Valid' : 'Invalid'}
                 </span>
-                <span className="text-xs text-hytale-muted break-all font-mono">{selectedPath}</span>
+                <span className="text-xs text-hytale-muted break-all font-mono">
+                  {selectedPath}
+                </span>
               </div>
 
               {selectedValid && (
@@ -51,7 +51,9 @@ export default function ServerSetup() {
           )}
 
           {error && (
-            <p className="mt-4 text-xs text-red-400">{error}</p>
+            <p role="alert" className="mt-4 text-xs text-red-400">
+              {error}
+            </p>
           )}
         </div>
 

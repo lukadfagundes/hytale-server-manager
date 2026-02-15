@@ -1,17 +1,6 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useUpdaterStore } from '../../stores/updater-store';
-
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 B';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
-}
-
-function formatSpeed(bytesPerSecond: number): string {
-  return `${formatBytes(bytesPerSecond)}/s`;
-}
+import { formatBytes, formatSpeed } from '../../utils/formatting';
 
 export default function UpdateNotification() {
   const {
@@ -35,6 +24,8 @@ export default function UpdateNotification() {
       status === 'downloaded' ||
       status === 'error');
 
+  const dialogRef = useRef<HTMLDivElement>(null);
+
   const handleClose = useCallback(() => {
     if (status === 'downloading') {
       remindLater();
@@ -47,11 +38,41 @@ export default function UpdateNotification() {
     }
   }, [status, remindLater]);
 
+  // Focus trap and keyboard handling
   useEffect(() => {
     if (!shouldShow) return;
+
+    const dialog = dialogRef.current;
+    if (dialog) {
+      dialog.focus();
+    }
+
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') handleClose();
+      if (e.key === 'Escape') {
+        handleClose();
+        return;
+      }
+
+      // Focus trap: constrain Tab/Shift+Tab to dialog
+      if (e.key === 'Tab' && dialog) {
+        const focusable = dialog.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     };
+
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
   }, [shouldShow, handleClose]);
@@ -65,10 +86,17 @@ export default function UpdateNotification() {
         if (e.target === e.currentTarget) handleClose();
       }}
     >
-      <div className="bg-hytale-dark border border-hytale-accent/30 rounded-lg w-full max-w-md shadow-2xl">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="update-notification-title"
+        tabIndex={-1}
+        className="bg-hytale-dark border border-hytale-accent/30 rounded-lg w-full max-w-md shadow-2xl focus:outline-none"
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-5 pb-3">
-          <h2 className="text-lg font-semibold text-hytale-text">
+          <h2 id="update-notification-title" className="text-lg font-semibold text-hytale-text">
             {status === 'available' && 'Update Available'}
             {status === 'downloading' && 'Downloading Update'}
             {status === 'downloaded' && 'Update Ready'}

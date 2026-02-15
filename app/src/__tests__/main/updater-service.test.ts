@@ -19,12 +19,16 @@ jest.mock('electron-updater', () => ({
   autoUpdater: mockAutoUpdater,
 }));
 
+const mockGetAllWindows = jest.fn();
+
 jest.mock('electron', () => ({
   app: {
     isPackaged: true,
     getVersion: () => '1.0.0',
   },
-  BrowserWindow: jest.fn(),
+  BrowserWindow: {
+    getAllWindows: mockGetAllWindows,
+  },
 }));
 
 import { IPC } from '../../shared/constants';
@@ -67,7 +71,9 @@ describe('updater-service', () => {
         isPackaged: true,
         getVersion: () => '1.0.0',
       },
-      BrowserWindow: jest.fn(),
+      BrowserWindow: {
+        getAllWindows: mockGetAllWindows,
+      },
     }));
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     return require('../../main/updater-service');
@@ -84,23 +90,23 @@ describe('updater-service', () => {
           isPackaged: false,
           getVersion: () => '1.0.0',
         },
-        BrowserWindow: jest.fn(),
+        BrowserWindow: {
+          getAllWindows: mockGetAllWindows,
+        },
       }));
 
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const unpackagedUpdater = require('../../main/updater-service');
-      const mockWindow = { webContents: { send: mockWebContentsSend }, isDestroyed: () => false };
 
-      unpackagedUpdater.initialize(mockWindow);
+      unpackagedUpdater.initialize();
 
       expect(mockAutoUpdaterOn).not.toHaveBeenCalled();
     });
 
-    it('should capture window reference and configure autoUpdater', () => {
+    it('should configure autoUpdater', () => {
       const updaterService = loadUpdaterService();
-      const mockWindow = { webContents: { send: mockWebContentsSend }, isDestroyed: () => false };
 
-      updaterService.initialize(mockWindow);
+      updaterService.initialize();
 
       expect(mockAutoUpdater.autoDownload).toBe(false);
       expect(mockAutoUpdater.autoInstallOnAppQuit).toBe(true);
@@ -108,9 +114,8 @@ describe('updater-service', () => {
 
     it('should register all required event listeners', () => {
       const updaterService = loadUpdaterService();
-      const mockWindow = { webContents: { send: mockWebContentsSend }, isDestroyed: () => false };
 
-      updaterService.initialize(mockWindow);
+      updaterService.initialize();
 
       expect(eventHandlers['checking-for-update']).toBeDefined();
       expect(eventHandlers['update-available']).toBeDefined();
@@ -122,9 +127,8 @@ describe('updater-service', () => {
 
     it('should schedule checkForUpdates after 5000ms', () => {
       const updaterService = loadUpdaterService();
-      const mockWindow = { webContents: { send: mockWebContentsSend }, isDestroyed: () => false };
 
-      updaterService.initialize(mockWindow);
+      updaterService.initialize();
 
       expect(mockCheckForUpdates).not.toHaveBeenCalled();
 
@@ -138,9 +142,8 @@ describe('updater-service', () => {
       mockCheckForUpdates.mockRejectedValue(new Error('Network error'));
 
       const updaterService = loadUpdaterService();
-      const mockWindow = { webContents: { send: mockWebContentsSend }, isDestroyed: () => false };
 
-      updaterService.initialize(mockWindow);
+      updaterService.initialize();
 
       jest.advanceTimersByTime(5000);
 
@@ -163,8 +166,9 @@ describe('updater-service', () => {
         webContents: { send: mockWebContentsSend },
         isDestroyed: jest.fn().mockReturnValue(false),
       };
+      mockGetAllWindows.mockReturnValue([mockWindow]);
       updaterService = loadUpdaterService();
-      updaterService.initialize(mockWindow as any);
+      updaterService.initialize();
     });
 
     it('should send UPDATER_CHECKING on checking-for-update event', () => {
@@ -238,6 +242,19 @@ describe('updater-service', () => {
 
       expect(mockWebContentsSend).not.toHaveBeenCalled();
     });
+
+    it('should broadcast to all open windows', () => {
+      const mockWindow2 = {
+        webContents: { send: jest.fn() },
+        isDestroyed: jest.fn().mockReturnValue(false),
+      };
+      mockGetAllWindows.mockReturnValue([mockWindow, mockWindow2]);
+
+      eventHandlers['checking-for-update']();
+
+      expect(mockWebContentsSend).toHaveBeenCalledWith(IPC.UPDATER_CHECKING);
+      expect(mockWindow2.webContents.send).toHaveBeenCalledWith(IPC.UPDATER_CHECKING);
+    });
   });
 
   describe('extractReleaseNotes (via event callbacks)', () => {
@@ -249,8 +266,9 @@ describe('updater-service', () => {
         webContents: { send: mockWebContentsSend },
         isDestroyed: jest.fn().mockReturnValue(false),
       };
+      mockGetAllWindows.mockReturnValue([mockWindow]);
       updaterService = loadUpdaterService();
-      updaterService.initialize(mockWindow as any);
+      updaterService.initialize();
     });
 
     it('should handle null releaseNotes', () => {

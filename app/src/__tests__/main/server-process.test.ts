@@ -47,6 +47,7 @@ function getModule() {
     jest.doMock('../../main/server-path', () => ({
       getServerDir: jest.fn().mockReturnValue('/mock/Server'),
     }));
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     mod = require('../../main/server-process');
   });
   return mod!;
@@ -196,7 +197,9 @@ describe('server-process', () => {
       mockProc.stderr.emit('data', Buffer.from('error line\n'));
 
       expect(logs).toContainEqual(expect.objectContaining({ line: 'info line', stream: 'stdout' }));
-      expect(logs).toContainEqual(expect.objectContaining({ line: 'error line', stream: 'stderr' }));
+      expect(logs).toContainEqual(
+        expect.objectContaining({ line: 'error line', stream: 'stderr' })
+      );
     });
 
     it('should handle spawn ENOENT error', async () => {
@@ -232,7 +235,7 @@ describe('server-process', () => {
       mockProc.emit('error', err);
 
       expect(mod.getStatus()).toBe('stopped');
-      expect(logs.some(l => l.includes('Permission denied'))).toBe(true);
+      expect(logs.some((l) => l.includes('Permission denied'))).toBe(true);
     });
   });
 
@@ -274,11 +277,8 @@ describe('server-process', () => {
       const stopPromise = mod.stop();
 
       if (process.platform === 'win32') {
-        // On Windows, stop() spawns taskkill instead of SIGTERM
-        expect(mockSpawn).toHaveBeenCalledWith(
-          'taskkill',
-          expect.arrayContaining(['/pid', '12345', '/T', '/F']),
-        );
+        // On Windows, stop() spawns graceful taskkill (without /F) first
+        expect(mockSpawn).toHaveBeenCalledWith('taskkill', ['/pid', '12345', '/T']);
       } else {
         expect(mockProc.kill).toHaveBeenCalledWith('SIGTERM');
       }

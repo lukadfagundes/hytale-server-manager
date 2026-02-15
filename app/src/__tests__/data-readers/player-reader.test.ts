@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { readAllPlayers, readPlayerMemories } from '../../main/data-readers/player-reader';
+import { readAllPlayers } from '../../main/data-readers/player-reader';
 
 jest.mock('fs');
 const mockFs = jest.mocked(fs);
@@ -8,10 +8,7 @@ const mockFs = jest.mocked(fs);
 const FIXTURES = path.join(__dirname, '..', 'fixtures');
 
 function loadFixture(name: string): string {
-  return jest.requireActual<typeof fs>('fs').readFileSync(
-    path.join(FIXTURES, name),
-    'utf-8',
-  );
+  return jest.requireActual<typeof fs>('fs').readFileSync(path.join(FIXTURES, name), 'utf-8');
 }
 
 const validPlayerJson = loadFixture('player-valid.json');
@@ -126,8 +123,8 @@ describe('readAllPlayers', () => {
     expect(memories).toHaveLength(3);
     expect(memories[0].npcRole).toBe('Goblin_Hermit');
     expect(memories[0].displayName).toBe('Goblin Hermit');
-    // 'server.map.region.Zone1_Tier1' → last segment since it doesn't end in '.name'
-    expect(memories[0].location).toBe('Zone1 Tier1');
+    // 'server.map.region.Zone1_Tier1' → penultimate segment for 3+ parts
+    expect(memories[0].location).toBe('region');
     expect(memories[0].capturedAt).toBe(1707750000000);
     expect(memories[0].isNameOverridden).toBe(false);
   });
@@ -209,7 +206,9 @@ describe('readAllPlayers', () => {
   it('should return empty array with error when directory does not exist', () => {
     const err = new Error('ENOENT: no such file or directory') as NodeJS.ErrnoException;
     err.code = 'ENOENT';
-    mockFs.readdirSync.mockImplementation(() => { throw err; });
+    mockFs.readdirSync.mockImplementation(() => {
+      throw err;
+    });
 
     const result = readAllPlayers('/fake/server');
 
@@ -221,7 +220,9 @@ describe('readAllPlayers', () => {
   it('should return error for non-ENOENT directory errors', () => {
     const err = new Error('Permission denied') as NodeJS.ErrnoException;
     err.code = 'EACCES';
-    mockFs.readdirSync.mockImplementation(() => { throw err; });
+    mockFs.readdirSync.mockImplementation(() => {
+      throw err;
+    });
 
     const result = readAllPlayers('/fake/server');
 
@@ -230,9 +231,9 @@ describe('readAllPlayers', () => {
 
   it('should handle read errors for individual files', () => {
     mockFs.readdirSync.mockReturnValue(['good.json', 'bad.json'] as any);
-    mockFs.readFileSync
-      .mockReturnValueOnce(validPlayerJson)
-      .mockImplementationOnce(() => { throw new Error('disk read error'); });
+    mockFs.readFileSync.mockReturnValueOnce(validPlayerJson).mockImplementationOnce(() => {
+      throw new Error('disk read error');
+    });
 
     const result = readAllPlayers('/fake/server');
 
@@ -246,33 +247,8 @@ describe('readAllPlayers', () => {
 
     readAllPlayers('/my/server');
 
-    expect(mockFs.readdirSync).toHaveBeenCalledWith(
-      path.join('/my/server', 'universe', 'players'),
-    );
+    expect(mockFs.readdirSync).toHaveBeenCalledWith(path.join('/my/server', 'universe', 'players'));
   });
 });
 
-describe('readPlayerMemories', () => {
-  beforeEach(() => {
-    jest.resetAllMocks();
-  });
-
-  it('should return memories keyed by player name', () => {
-    mockFs.readdirSync.mockReturnValue(['abc.json'] as any);
-    mockFs.readFileSync.mockReturnValue(validPlayerJson);
-
-    const result = readPlayerMemories('/fake/server');
-
-    expect(result['XxDandelionxX']).toBeDefined();
-    expect(result['XxDandelionxX']).toHaveLength(3);
-  });
-
-  it('should omit players with no memories', () => {
-    mockFs.readdirSync.mockReturnValue(['min.json'] as any);
-    mockFs.readFileSync.mockReturnValue(minimalPlayerJson);
-
-    const result = readPlayerMemories('/fake/server');
-
-    expect(Object.keys(result)).toHaveLength(0);
-  });
-});
+// readPlayerMemories was removed as dead code in WO-016

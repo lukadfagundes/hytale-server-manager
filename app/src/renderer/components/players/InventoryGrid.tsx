@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { InventorySlot } from '../../types/player';
 import { durabilityPercent } from '../../utils/formatting';
+import { formatItemId } from '../../utils/translation';
 import ItemIcon from './ItemIcon';
 import ItemTooltip from './ItemTooltip';
 
@@ -22,6 +23,11 @@ export default function InventoryGrid({ label, items, capacity, columns }: Inven
     setHovered({ item, x: rect.left + rect.width / 2, y: rect.top });
   }
 
+  function handleFocus(e: React.FocusEvent, item: InventorySlot) {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setHovered({ item, x: rect.left + rect.width / 2, y: rect.top });
+  }
+
   return (
     <div className="mb-3">
       <h4 className="text-xs text-hytale-muted mb-1">
@@ -39,8 +45,12 @@ export default function InventoryGrid({ label, items, capacity, columns }: Inven
                 ? 'border-hytale-accent/50 bg-hytale-darker shadow-inner'
                 : 'border-hytale-accent/20 bg-hytale-darker/50'
             }`}
+            tabIndex={item ? 0 : undefined}
+            aria-label={item ? formatItemId(item.id) : undefined}
             onMouseEnter={item ? (e) => handleMouseEnter(e, item) : undefined}
             onMouseLeave={() => setHovered(null)}
+            onFocus={item ? (e) => handleFocus(e, item) : undefined}
+            onBlur={() => setHovered(null)}
           >
             {item && (
               <>
@@ -54,7 +64,14 @@ export default function InventoryGrid({ label, items, capacity, columns }: Inven
                   (() => {
                     const pct = durabilityPercent(item.durability, item.maxDurability);
                     return (
-                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-hytale-darker rounded-full">
+                      <div
+                        className="absolute bottom-0 left-0 right-0 h-1 bg-hytale-darker rounded-full"
+                        role="progressbar"
+                        aria-valuenow={Math.round(pct)}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-label="Durability"
+                      >
                         <div
                           className={`h-full rounded-full ${
                             pct > 50 ? 'bg-green-500' : pct > 20 ? 'bg-yellow-500' : 'bg-red-500'

@@ -8,7 +8,11 @@ import { getServerDir } from './server-path';
 export type ServerStatus = 'stopped' | 'starting' | 'running' | 'stopping';
 
 type StatusCallback = (status: ServerStatus) => void;
-type LogCallback = (entry: { line: string; stream: 'stdout' | 'stderr'; timestamp: number }) => void;
+type LogCallback = (entry: {
+  line: string;
+  stream: 'stdout' | 'stderr';
+  timestamp: number;
+}) => void;
 
 let childProcess: ChildProcess | null = null;
 let currentStatus: ServerStatus = 'stopped';
@@ -20,7 +24,7 @@ const CRASH_THRESHOLD_MS = 30_000;
 
 function setStatus(status: ServerStatus): void {
   currentStatus = status;
-  statusListeners.forEach(cb => cb(status));
+  statusListeners.forEach((cb) => cb(status));
   for (const win of BrowserWindow.getAllWindows()) {
     win.webContents.send(IPC.SERVER_STATUS, status);
   }
@@ -28,7 +32,7 @@ function setStatus(status: ServerStatus): void {
 
 function pushLog(line: string, stream: 'stdout' | 'stderr'): void {
   const entry = { line, stream, timestamp: Date.now() };
-  logListeners.forEach(cb => cb(entry));
+  logListeners.forEach((cb) => cb(entry));
   for (const win of BrowserWindow.getAllWindows()) {
     win.webContents.send(IPC.SERVER_LOG, entry);
   }
@@ -75,15 +79,19 @@ export function start(): Promise<void> {
     let startDetected = false;
 
     childProcess.stdout?.on('data', (data: Buffer) => {
-      const lines = data.toString().split('\n').filter(l => l.trim());
+      const lines = data
+        .toString()
+        .split('\n')
+        .filter((l) => l.trim());
       for (const line of lines) {
         pushLog(line, 'stdout');
-        if (!startDetected && (
-          line.includes('Server started') ||
-          line.includes('listening') ||
-          line.includes('Done') ||
-          line.includes('Listening on')
-        )) {
+        if (
+          !startDetected &&
+          (line.includes('Server started') ||
+            line.includes('listening') ||
+            line.includes('Done') ||
+            line.includes('Listening on'))
+        ) {
           startDetected = true;
           setStatus('running');
         }
@@ -91,7 +99,10 @@ export function start(): Promise<void> {
     });
 
     childProcess.stderr?.on('data', (data: Buffer) => {
-      const lines = data.toString().split('\n').filter(l => l.trim());
+      const lines = data
+        .toString()
+        .split('\n')
+        .filter((l) => l.trim());
       for (const line of lines) {
         pushLog(line, 'stderr');
       }
@@ -106,7 +117,10 @@ export function start(): Promise<void> {
         setStatus('stopped');
         start().catch(console.error);
       } else if (code !== 0 && code !== null && uptime < CRASH_THRESHOLD_MS) {
-        pushLog(`[Server] Crashed after ${Math.round(uptime / 1000)}s (exit code ${code}) — not auto-restarting`, 'stderr');
+        pushLog(
+          `[Server] Crashed after ${Math.round(uptime / 1000)}s (exit code ${code}) — not auto-restarting`,
+          'stderr'
+        );
         setStatus('stopped');
       } else {
         if (code !== 0 && code !== null) {
@@ -143,21 +157,29 @@ export function stop(): Promise<void> {
 
     setStatus('stopping');
 
-    const killTimeout = setTimeout(() => {
-      if (childProcess) {
+    const forceKillTimeout = setTimeout(() => {
+      if (childProcess && childProcess.pid) {
         pushLog('[Launcher] Force-killing server (graceful stop timed out after 15s)', 'stderr');
-        childProcess.kill('SIGKILL');
+        if (process.platform === 'win32') {
+          // Force kill on Windows after graceful attempt failed
+          spawn('taskkill', ['/pid', childProcess.pid.toString(), '/T', '/F']);
+        } else {
+          childProcess.kill('SIGKILL');
+        }
       }
     }, 15000);
 
     childProcess.on('close', () => {
-      clearTimeout(killTimeout);
+      clearTimeout(forceKillTimeout);
       resolve();
     });
 
     if (process.platform === 'win32') {
       if (childProcess.pid) {
-        spawn('taskkill', ['/pid', childProcess.pid.toString(), '/T', '/F']);
+        // Graceful shutdown on Windows: taskkill without /F sends WM_CLOSE
+        // which Java can handle for graceful shutdown
+        pushLog('[Launcher] Requesting graceful shutdown...', 'stdout');
+        spawn('taskkill', ['/pid', childProcess.pid.toString(), '/T']);
       }
     } else {
       childProcess.kill('SIGTERM');

@@ -71,9 +71,7 @@ app.whenReady().then(async () => {
   createWindow();
 
   // Initialize auto-updater (no-op in development, checks after 5s in production)
-  if (mainWindow) {
-    initUpdater(mainWindow);
-  }
+  initUpdater();
 
   // Initialize server path from config and start file watcher if valid
   const serverDir = initServerPath();

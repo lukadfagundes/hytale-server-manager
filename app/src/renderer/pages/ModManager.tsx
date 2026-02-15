@@ -24,13 +24,19 @@ export default function ModManager() {
       </div>
 
       {isServerRunning && (
-        <div className="bg-yellow-900/30 border border-yellow-600/50 rounded-lg px-4 py-3 text-sm text-yellow-200">
+        <div
+          role="alert"
+          className="bg-yellow-900/30 border border-yellow-600/50 rounded-lg px-4 py-3 text-sm text-yellow-200"
+        >
           Stop the server to manage mods.
         </div>
       )}
 
       {error && (
-        <div className="bg-red-900/20 border border-red-500/30 rounded-lg px-4 py-3 text-sm text-red-300">
+        <div
+          role="alert"
+          className="bg-red-900/20 border border-red-500/30 rounded-lg px-4 py-3 text-sm text-red-300"
+        >
           {error}
         </div>
       )}

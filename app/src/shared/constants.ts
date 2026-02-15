@@ -1,7 +1,3 @@
-// Paths (relative to project root)
-export const SERVER_DIR = '../Server';
-export const DISABLED_MODS_DIR = './disabled-mods';
-
 // IPC Channels
 export const IPC = {
   SERVER_START: 'server:start',

@@ -128,6 +128,7 @@ export default function LogPanel() {
       <div className="flex items-center justify-between px-4 py-2 border-b border-hytale-accent/30 flex-shrink-0">
         <button
           onClick={() => setExpanded(!expanded)}
+          aria-expanded={expanded}
           className="text-sm font-medium text-hytale-text hover:text-white"
         >
           Server Log ({logs.length}) {expanded ? '[-]' : '[+]'}

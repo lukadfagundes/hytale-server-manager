@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { formatTranslationKey } from '../../shared/translation';
 
 export interface PlayerData {
   uuid: string;
@@ -14,11 +15,26 @@ export interface PlayerData {
     oxygen: { current: number; modifiers: Record<string, number> };
   };
   inventory: {
-    storage: Record<number, { id: string; quantity: number; durability: number; maxDurability: number }>;
-    hotbar: Record<number, { id: string; quantity: number; durability: number; maxDurability: number }>;
-    backpack: Record<number, { id: string; quantity: number; durability: number; maxDurability: number }>;
-    utility: Record<number, { id: string; quantity: number; durability: number; maxDurability: number }>;
-    tool: Record<number, { id: string; quantity: number; durability: number; maxDurability: number }>;
+    storage: Record<
+      number,
+      { id: string; quantity: number; durability: number; maxDurability: number }
+    >;
+    hotbar: Record<
+      number,
+      { id: string; quantity: number; durability: number; maxDurability: number }
+    >;
+    backpack: Record<
+      number,
+      { id: string; quantity: number; durability: number; maxDurability: number }
+    >;
+    utility: Record<
+      number,
+      { id: string; quantity: number; durability: number; maxDurability: number }
+    >;
+    tool: Record<
+      number,
+      { id: string; quantity: number; durability: number; maxDurability: number }
+    >;
     activeHotbarSlot: number;
   };
   armor: [
@@ -46,7 +62,12 @@ export interface PlayersResult {
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-function parseItem(raw: any): { id: string; quantity: number; durability: number; maxDurability: number } {
+function parseItem(raw: any): {
+  id: string;
+  quantity: number;
+  durability: number;
+  maxDurability: number;
+} {
   return {
     id: raw.Id ?? '',
     quantity: raw.Quantity ?? 0,
@@ -55,8 +76,13 @@ function parseItem(raw: any): { id: string; quantity: number; durability: number
   };
 }
 
-function parseInventorySection(raw: any): Record<number, { id: string; quantity: number; durability: number; maxDurability: number }> {
-  const result: Record<number, { id: string; quantity: number; durability: number; maxDurability: number }> = {};
+function parseInventorySection(
+  raw: any
+): Record<number, { id: string; quantity: number; durability: number; maxDurability: number }> {
+  const result: Record<
+    number,
+    { id: string; quantity: number; durability: number; maxDurability: number }
+  > = {};
   const items = raw?.Items;
   if (!items) return result;
   for (const [slot, item] of Object.entries(items)) {
@@ -73,13 +99,6 @@ function parseStat(raw: any): { current: number; modifiers: Record<string, numbe
     }
   }
   return { current: raw?.Value ?? 0, modifiers };
-}
-
-function formatTranslationKey(key: string): string {
-  const parts = key.split('.');
-  const last = parts[parts.length - 1];
-  const meaningful = last === 'name' && parts.length >= 3 ? parts[parts.length - 2] : last;
-  return meaningful.replace(/_/g, ' ');
 }
 
 function parseMemories(raw: any): PlayerData['memories'] {
@@ -182,9 +201,10 @@ export function readAllPlayers(serverDir: string): PlayersResult {
         const data = JSON.parse(content);
         players.push(parsePlayer(file, data));
       } catch (err) {
-        const msg = err instanceof SyntaxError
-          ? `Failed to parse ${file}: ${err.message}`
-          : `Failed to read ${file}: ${(err as Error).message}`;
+        const msg =
+          err instanceof SyntaxError
+            ? `Failed to parse ${file}: ${err.message}`
+            : `Failed to read ${file}: ${(err as Error).message}`;
         errors.push(msg);
       }
     }
@@ -198,15 +218,4 @@ export function readAllPlayers(serverDir: string): PlayersResult {
   }
 
   return { data: players, errors };
-}
-
-export function readPlayerMemories(serverDir: string): Record<string, PlayerData['memories']> {
-  const { data: players } = readAllPlayers(serverDir);
-  const result: Record<string, PlayerData['memories']> = {};
-  for (const player of players) {
-    if (player.memories.length > 0) {
-      result[player.name] = player.memories;
-    }
-  }
-  return result;
 }

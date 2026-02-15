@@ -14,6 +14,7 @@ export default function PlayerCard({ player }: PlayerCardProps) {
     <div className="bg-hytale-dark rounded-lg border border-hytale-accent/30 overflow-hidden">
       <button
         onClick={() => setExpanded(!expanded)}
+        aria-expanded={expanded}
         className="w-full px-4 py-3 flex items-center justify-between hover:bg-hytale-accent/10 transition-colors text-left"
       >
         <div>

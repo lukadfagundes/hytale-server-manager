@@ -41,8 +41,8 @@ renderer/
 ├── components/             # 17 reusable UI components
 │   ├── layout/             # Header, Sidebar, ToastContainer
 │   ├── server/             # ServerToggle, ServerStatus, LogPanel
-│   ├── players/            # PlayerCard, ArmorDisplay, EquipmentTree,
-│   │                       # InventoryGrid, ItemIcon, ItemTooltip, StatsBar
+│   ├── players/            # PlayerCard, EquipmentTree, InventoryGrid,
+│   │                       # ItemIcon, ItemTooltip
 │   ├── mods/               # ModCard
 │   ├── warps/              # WarpCard
 │   ├── setup/              # ServerSetup (first-run path selection)

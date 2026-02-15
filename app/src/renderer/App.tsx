@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
+import ErrorBoundary from './components/ErrorBoundary';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
 import ToastContainer from './components/layout/ToastContainer';
@@ -37,35 +38,43 @@ export default function App() {
   // Loading state while config is being fetched
   if (configStatus === 'loading') {
     return (
-      <div className="flex h-screen items-center justify-center bg-hytale-darker">
-        <p className="text-hytale-muted text-sm">Loading...</p>
-      </div>
+      <ErrorBoundary>
+        <div className="flex h-screen items-center justify-center bg-hytale-darker">
+          <p className="text-hytale-muted text-sm">Loading...</p>
+        </div>
+      </ErrorBoundary>
     );
   }
 
   // Setup screen when server path is invalid
   if (configStatus === 'invalid') {
-    return <ServerSetup />;
+    return (
+      <ErrorBoundary>
+        <ServerSetup />
+      </ErrorBoundary>
+    );
   }
 
   return (
-    <HashRouter>
-      <div className="flex h-screen overflow-hidden">
-        <Sidebar />
-        <div className="flex flex-col flex-1 overflow-hidden">
-          <Header />
-          <main className="flex-1 overflow-auto p-6">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/mods" element={<ModManager />} />
-              <Route path="/players" element={<Players />} />
-              <Route path="/warps" element={<Warps />} />
-            </Routes>
-          </main>
+    <ErrorBoundary>
+      <HashRouter>
+        <div className="flex h-screen overflow-hidden">
+          <Sidebar />
+          <div className="flex flex-col flex-1 overflow-hidden">
+            <Header />
+            <main className="flex-1 overflow-auto p-6">
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/mods" element={<ModManager />} />
+                <Route path="/players" element={<Players />} />
+                <Route path="/warps" element={<Warps />} />
+              </Routes>
+            </main>
+          </div>
+          <ToastContainer />
+          <UpdateNotification />
         </div>
-        <ToastContainer />
-        <UpdateNotification />
-      </div>
-    </HashRouter>
+      </HashRouter>
+    </ErrorBoundary>
   );
 }
