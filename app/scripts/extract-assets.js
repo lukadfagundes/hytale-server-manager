@@ -37,7 +37,8 @@ function isUpToDate() {
   try {
     const zipMtime = String(fs.statSync(ASSETS_ZIP).mtimeMs);
     const stamp = fs.readFileSync(STAMP_FILE, 'utf-8').trim();
-    return stamp === zipMtime;
+    // Stamp must match AND icon map must exist
+    return stamp === zipMtime && fs.existsSync(ICON_MAP_FILE);
   } catch {
     return false;
   }

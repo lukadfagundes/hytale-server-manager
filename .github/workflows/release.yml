@@ -62,7 +62,9 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: app/package-lock.json
+          cache-dependency-path: |
+            package-lock.json
+            app/package-lock.json
       - run: npm ci
       - name: Extract assets
         run: npm run extract-assets
@@ -122,12 +124,41 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: app/package-lock.json
+          cache-dependency-path: |
+            package-lock.json
+            app/package-lock.json
       - run: npm ci
       - name: Extract assets
         run: npm run extract-assets
       - name: Build and package
         run: npm run package:ci
+
+      - name: Generate latest-linux.yml
+        run: |
+          version="${{ needs.extract-version.outputs.version_without_v }}"
+          appimage_path=$(find app/out -name "*.AppImage" -type f | head -n 1)
+
+          if [ -z "$appimage_path" ]; then
+            echo "::error::No .AppImage found in app/out"
+            exit 1
+          fi
+
+          sha512=$(sha512sum "$appimage_path" | cut -d ' ' -f 1)
+          size=$(stat --printf="%s" "$appimage_path")
+          filename=$(basename "$appimage_path")
+          release_date=$(date -u +"%Y-%m-%dT%H:%M:%S.000Z")
+
+          cat > app/out/latest-linux.yml <<EOF
+          version: $version
+          files:
+            - url: $filename
+              sha512: $sha512
+              size: $size
+          path: $filename
+          sha512: $sha512
+          releaseDate: $release_date
+          EOF
+
       - name: Upload Linux artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -135,6 +166,7 @@ jobs:
           path: |
             app/out/**/*.AppImage
             app/out/**/*.deb
+            app/out/latest-linux.yml
           retention-days: 30
 
   create-release:
@@ -160,7 +192,7 @@ jobs:
       - name: Collect release files
         run: |
           mkdir -p release-files
-          find artifacts -type f \( -name "*.exe" -o -name "*.AppImage" -o -name "*.deb" -o -name "latest.yml" \) -exec cp {} release-files/ \;
+          find artifacts -type f \( -name "*.exe" -o -name "*.AppImage" -o -name "*.deb" -o -name "latest.yml" -o -name "latest-linux.yml" \) -exec cp {} release-files/ \;
           echo "Release files:"
           ls -la release-files/
 

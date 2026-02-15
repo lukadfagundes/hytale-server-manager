@@ -5,7 +5,6 @@ directories:
   output: out
 files:
   - dist/**/*
-  - disabled-mods/**/*
   - package.json
 extraFiles:
   - from: disabled-mods
@@ -13,7 +12,7 @@ extraFiles:
 publish:
   provider: github
   owner: lukadfagundes
-  repo: hytale-server
+  repo: hytale-server-manager
 nsis:
   oneClick: false
   perMachine: false
