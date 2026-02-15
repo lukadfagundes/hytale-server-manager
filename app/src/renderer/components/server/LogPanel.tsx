@@ -1,5 +1,5 @@
-import { memo, useEffect, useMemo, useRef, useState } from 'react';
-import { useServerStore } from '../../stores/server-store';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useServerStore, StoreLogEntry } from '../../stores/server-store';
 
 const ANSI_COLORS: Record<number, string> = {
   30: '#4a4a4a', // black (brightened for dark bg)
@@ -87,13 +87,7 @@ const AnsiLine = memo(function AnsiLine({ text }: { text: string }) {
   );
 });
 
-interface LogEntry {
-  line: string;
-  stream: string;
-  timestamp: number;
-}
-
-const LogRow = memo(function LogRow({ entry }: { entry: LogEntry }) {
+const LogRow = memo(function LogRow({ entry }: { entry: StoreLogEntry }) {
   return (
     <div className={entry.stream === 'stderr' ? 'text-red-400' : 'text-hytale-text/80'}>
       <span className="text-hytale-muted mr-2">
@@ -104,13 +98,26 @@ const LogRow = memo(function LogRow({ entry }: { entry: LogEntry }) {
   );
 });
 
+// Threshold in pixels for determining if user is "near bottom"
+const SCROLL_THRESHOLD = 50;
+
 export default function LogPanel() {
   const { logs, clearLogs } = useServerStore();
   const [expanded, setExpanded] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+  // Track whether user is near the bottom; start true so initial logs scroll into view
+  const isNearBottom = useRef(true);
+
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    // User is "near bottom" if scrolled within threshold of the bottom
+    isNearBottom.current = el.scrollTop + el.clientHeight >= el.scrollHeight - SCROLL_THRESHOLD;
+  }, []);
 
   useEffect(() => {
-    if (scrollRef.current) {
+    // Only auto-scroll if user is near the bottom
+    if (scrollRef.current && isNearBottom.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [logs]);
@@ -132,11 +139,15 @@ export default function LogPanel() {
         </button>
       </div>
       {expanded && (
-        <div ref={scrollRef} className="flex-1 overflow-auto p-3 font-mono text-xs leading-relaxed">
+        <div
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className="flex-1 overflow-auto p-3 font-mono text-xs leading-relaxed"
+        >
           {logs.length === 0 ? (
             <p className="text-hytale-muted">No log output yet.</p>
           ) : (
-            logs.map((entry, i) => <LogRow key={i} entry={entry} />)
+            logs.map((entry) => <LogRow key={entry.id} entry={entry} />)
           )}
         </div>
       )}

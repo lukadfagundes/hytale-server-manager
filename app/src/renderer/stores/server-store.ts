@@ -1,18 +1,21 @@
 import { create } from 'zustand';
-import { startServer, stopServer, onServerStatusChanged, onServerLog } from '../services/ipc-client';
+import {
+  startServer,
+  stopServer,
+  onServerStatusChanged,
+  onServerLog,
+} from '../services/ipc-client';
 import { useToastStore } from './toast-store';
+import type { ServerStatus, LogEntry } from '../types/server';
 
-type ServerStatus = 'stopped' | 'starting' | 'running' | 'stopping';
-
-interface LogEntry {
-  line: string;
-  stream: string;
-  timestamp: number;
+// Extend LogEntry with a unique id for stable React keys
+export interface StoreLogEntry extends LogEntry {
+  id: number;
 }
 
 interface ServerStore {
   status: ServerStatus;
-  logs: LogEntry[];
+  logs: StoreLogEntry[];
   start: () => Promise<void>;
   stop: () => Promise<void>;
   clearLogs: () => void;
@@ -20,6 +23,7 @@ interface ServerStore {
 }
 
 const MAX_LOGS = 1000;
+let logIdCounter = 0;
 
 export const useServerStore = create<ServerStore>((set) => ({
   status: 'stopped',
@@ -40,18 +44,26 @@ export const useServerStore = create<ServerStore>((set) => ({
       useToastStore.getState().addToast(`Failed to stop server: ${msg}`, 'error');
     }
   },
-  clearLogs: () => set({ logs: [] }),
+  clearLogs: () => {
+    logIdCounter = 0;
+    set({ logs: [] });
+  },
   init: () => {
     const unsubStatus = onServerStatusChanged((status) => {
       if (status === 'starting') {
+        logIdCounter = 0;
         set({ status: status as ServerStatus, logs: [] });
       } else {
         set({ status: status as ServerStatus });
       }
     });
     const unsubLog = onServerLog((entry) => {
+      const entryWithId: StoreLogEntry = {
+        ...entry,
+        id: ++logIdCounter,
+      };
       set((state) => {
-        const logs = [...state.logs, entry];
+        const logs = [...state.logs, entryWithId];
         return { logs: logs.length > MAX_LOGS ? logs.slice(-MAX_LOGS) : logs };
       });
     });

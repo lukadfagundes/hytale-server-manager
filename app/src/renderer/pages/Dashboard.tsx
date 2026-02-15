@@ -1,25 +1,18 @@
 import { useEffect } from 'react';
 import { useServerStore } from '../stores/server-store';
-import { useUniverseStore } from '../stores/universe-store';
-import { useModStore } from '../stores/mod-store';
 import ServerToggle from '../components/server/ServerToggle';
 import LogPanel from '../components/server/LogPanel';
 
 export default function Dashboard() {
   const init = useServerStore((s) => s.init);
-  const initUniverseRefresh = useUniverseStore((s) => s.initRefreshListener);
-  const initModRefresh = useModStore((s) => s.initRefreshListener);
 
+  // Server log/status listeners are Dashboard-scoped since LogPanel only renders here
   useEffect(() => {
     const cleanupServer = init();
-    const cleanupUniverse = initUniverseRefresh();
-    const cleanupMod = initModRefresh();
     return () => {
       cleanupServer();
-      cleanupUniverse();
-      cleanupMod();
     };
-  }, [init, initUniverseRefresh, initModRefresh]);
+  }, [init]);
 
   return (
     <div className="flex flex-col h-full">

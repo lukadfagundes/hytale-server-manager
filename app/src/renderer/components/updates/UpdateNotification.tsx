@@ -40,6 +40,8 @@ export default function UpdateNotification() {
       remindLater();
     } else if (status === 'available') {
       remindLater();
+    } else if (status === 'downloaded') {
+      remindLater();
     } else if (status === 'error') {
       remindLater();
     }

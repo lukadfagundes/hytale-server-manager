@@ -30,11 +30,7 @@ export function getMapMarkerPath(markerType: string): string {
   return `asset:///map-markers/${markerType}.png`;
 }
 
-export function reloadIconMap(): Promise<Record<string, string>> {
-  itemIconMap = null;
-  return loadIconMap();
-}
-
+// resetIconMap is used by asset-store for deduplication and by tests for teardown
 export function resetIconMap(): void {
   itemIconMap = null;
 }

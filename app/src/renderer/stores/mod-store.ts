@@ -1,14 +1,7 @@
 import { create } from 'zustand';
 import { getMods, toggleMod, onDataRefresh } from '../services/ipc-client';
 import { useToastStore } from './toast-store';
-
-interface ModInfo {
-  name: string;
-  enabled: boolean;
-  path: string;
-  hasStateFile: boolean;
-  sizeBytes: number;
-}
+import type { ModInfo } from '../types/mod';
 
 interface ModStore {
   mods: ModInfo[];

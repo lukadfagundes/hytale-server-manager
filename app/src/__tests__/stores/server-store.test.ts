@@ -170,7 +170,7 @@ describe('server-store', () => {
       expect(useServerStore.getState().logs).toHaveLength(1);
     });
 
-    it('should append log entries to the log buffer', () => {
+    it('should append log entries to the log buffer with unique ids', () => {
       mockOnServerStatusChanged.mockReturnValue(jest.fn());
 
       let logCallback: (entry: { line: string; stream: string; timestamp: number }) => void;
@@ -188,8 +188,12 @@ describe('server-store', () => {
 
       const logs = useServerStore.getState().logs;
       expect(logs).toHaveLength(2);
-      expect(logs[0]).toEqual({ line: 'first log', stream: 'stdout', timestamp: 1 });
-      expect(logs[1]).toEqual({ line: 'second log', stream: 'stderr', timestamp: 2 });
+      // Check that each log entry has the original fields plus a unique id
+      expect(logs[0]).toMatchObject({ line: 'first log', stream: 'stdout', timestamp: 1 });
+      expect(logs[1]).toMatchObject({ line: 'second log', stream: 'stderr', timestamp: 2 });
+      expect(typeof logs[0].id).toBe('number');
+      expect(typeof logs[1].id).toBe('number');
+      expect(logs[0].id).not.toBe(logs[1].id);
     });
 
     it('should cap log buffer at MAX_LOGS (1000) entries', () => {

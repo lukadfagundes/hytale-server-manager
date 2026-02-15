@@ -2,6 +2,7 @@ import type { PlayerData } from '../types/player';
 import type { ModInfo } from '../types/mod';
 import type { WorldMapData } from '../types/world';
 import type { Warp } from '../types/warp';
+import type { LogEntry } from '../types/server';
 
 declare global {
   interface Window {
@@ -36,9 +37,13 @@ export async function getPlayers(): Promise<DataResult<PlayerData[]>> {
 export async function getWarps(): Promise<DataResult<Warp[]>> {
   const result = (await window.electronAPI.invoke('data:warps')) as {
     data: Warp[];
-    error: string | null;
+    error?: string | null;
+    errors?: string[];
   };
-  return { data: result.data, errors: result.error ? [result.error] : [] };
+  // Handle both singular `error` (current) and plural `errors` (future) response shapes
+  const errors =
+    result.errors && result.errors.length > 0 ? result.errors : result.error ? [result.error] : [];
+  return { data: result.data, errors };
 }
 
 export async function getWorldMap(): Promise<DataResult<WorldMapData>> {
@@ -69,12 +74,8 @@ export function onServerStatusChanged(callback: (status: string) => void): () =>
   return window.electronAPI.on('server:status-changed', (status) => callback(status as string));
 }
 
-export function onServerLog(
-  callback: (entry: { line: string; stream: string; timestamp: number }) => void
-): () => void {
-  return window.electronAPI.on('server:log', (entry) =>
-    callback(entry as { line: string; stream: string; timestamp: number })
-  );
+export function onServerLog(callback: (entry: LogEntry) => void): () => void {
+  return window.electronAPI.on('server:log', (entry) => callback(entry as LogEntry));
 }
 
 export function onDataRefresh(callback: (category: string) => void): () => void {

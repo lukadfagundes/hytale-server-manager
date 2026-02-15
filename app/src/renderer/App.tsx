@@ -12,6 +12,8 @@ import Warps from './pages/Warps';
 import { useUpdaterStore } from './stores/updater-store';
 import { useConfigStore } from './stores/config-store';
 import { useAssetStore } from './stores/asset-store';
+import { useUniverseStore } from './stores/universe-store';
+import { useModStore } from './stores/mod-store';
 
 export default function App() {
   const configStatus = useConfigStore((s) => s.status);
@@ -20,10 +22,15 @@ export default function App() {
     const cleanupUpdater = useUpdaterStore.getState().init();
     const cleanupConfig = useConfigStore.getState().init();
     const cleanupAssets = useAssetStore.getState().init();
+    // App-scoped refresh listeners for universe and mod data
+    const cleanupUniverse = useUniverseStore.getState().initRefreshListener();
+    const cleanupMod = useModStore.getState().initRefreshListener();
     return () => {
       cleanupUpdater();
       cleanupConfig();
       cleanupAssets();
+      cleanupUniverse();
+      cleanupMod();
     };
   }, []);
 

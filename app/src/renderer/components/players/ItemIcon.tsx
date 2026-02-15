@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getItemIconPath, reloadIconMap } from '../../utils/asset-paths';
+import { getItemIconPath } from '../../utils/asset-paths';
 import { formatItemId } from '../../utils/translation';
 import { useAssetStore } from '../../stores/asset-store';
 
@@ -10,18 +10,14 @@ interface ItemIconProps {
 
 export default function ItemIcon({ itemId, className = '' }: ItemIconProps) {
   const [imgError, setImgError] = useState(false);
-  const [mapLoaded, setMapLoaded] = useState(false);
-  const assetStatus = useAssetStore((s) => s.status);
+  const iconMapReady = useAssetStore((s) => s.iconMapReady);
 
-  // Load or reload the icon map when assets become ready
+  // Reset error state when icon map reloads (e.g., after re-extraction)
   useEffect(() => {
-    if (assetStatus === 'ready') {
-      reloadIconMap().then(() => {
-        setMapLoaded(true);
-        setImgError(false);
-      });
+    if (iconMapReady) {
+      setImgError(false);
     }
-  }, [assetStatus]);
+  }, [iconMapReady]);
 
   if (!itemId || imgError) {
     return (
@@ -33,7 +29,7 @@ export default function ItemIcon({ itemId, className = '' }: ItemIconProps) {
     );
   }
 
-  if (!mapLoaded) return null;
+  if (!iconMapReady) return null;
 
   return (
     <img
