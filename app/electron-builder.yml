@@ -16,6 +16,7 @@ nsis:
   createDesktopShortcut: true
   uninstallDisplayName: Hytale Server Manager
   include: build/uninstaller.nsh
+  artifactName: Hytale-Server-Manager-Setup-${version}.${ext}
 win:
   target:
     - nsis
