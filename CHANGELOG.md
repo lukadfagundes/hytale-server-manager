@@ -136,11 +136,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Custom NSIS uninstaller script cleans up %APPDATA%\hytale-server-manager (config + asset cache) and %LOCALAPPDATA%\hytale-server-manager-updater (updater download cache) on uninstall (WO-020)
 
-### Known Issues
-
-- Pervasive unsafe `as` casts in ipc-client.ts with no runtime validation
-- No integration, E2E, or visual tests
-
 ## [0.0.2] - 2026-02-14
 
 ### Changed
