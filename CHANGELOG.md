@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-02-16
+
 ### Fixed
 
 - NSIS uninstaller no longer wipes user config during auto-updates -- customUnInstall macro guarded with ${isUpdated} check so cleanup only runs on actual uninstall
