@@ -1,6 +1,6 @@
 {
   "name": "hytale-server-manager",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "description": "Hytale Server Manager Desktop Application",
   "author": {
     "name": "Luka Fagundes",
@@ -30,6 +30,7 @@
     "react-dom": "^19.0.0",
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.1.0",
+    "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.1",
     "zustand": "^5.0.0"
   },

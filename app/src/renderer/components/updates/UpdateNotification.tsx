@@ -1,4 +1,7 @@
 import { useEffect, useCallback, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
+import remarkGfm from 'remark-gfm';
 import { useUpdaterStore } from '../../stores/updater-store';
 import { formatBytes, formatSpeed } from '../../utils/formatting';
 
@@ -92,7 +95,7 @@ export default function UpdateNotification() {
         aria-modal="true"
         aria-labelledby="update-notification-title"
         tabIndex={-1}
-        className="bg-hytale-dark border border-hytale-accent/30 rounded-lg w-full max-w-md shadow-2xl focus:outline-none"
+        className="bg-hytale-dark border border-hytale-accent/30 rounded-lg w-full max-w-2xl shadow-2xl focus:outline-none"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-5 pb-3">
@@ -176,10 +179,69 @@ function AvailableContent({
 
       {/* Release notes */}
       {updateInfo.releaseNotes && (
-        <div className="bg-hytale-darker rounded p-3 max-h-40 overflow-auto">
-          <p className="text-sm text-hytale-text/80 whitespace-pre-wrap">
+        <div className="bg-hytale-darker rounded p-4 max-h-96 overflow-auto">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeRaw]}
+            components={{
+              h1: ({ children }) => (
+                <h3 className="text-base font-bold text-hytale-text mt-4 mb-2 first:mt-0">
+                  {children}
+                </h3>
+              ),
+              h2: ({ children }) => (
+                <h3 className="text-sm font-semibold text-hytale-text mt-3 mb-1">{children}</h3>
+              ),
+              h3: ({ children }) => (
+                <h4 className="text-sm font-semibold text-hytale-text mt-2 mb-1">{children}</h4>
+              ),
+              p: ({ children }) => (
+                <p className="text-sm text-hytale-text/80 leading-relaxed mb-2">{children}</p>
+              ),
+              a: ({ href, children }) => (
+                <a
+                  href={href}
+                  className="text-hytale-highlight hover:underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {children}
+                </a>
+              ),
+              ul: ({ children }) => (
+                <ul className="list-disc list-inside space-y-0.5 mb-2 text-sm text-hytale-text/80">
+                  {children}
+                </ul>
+              ),
+              ol: ({ children }) => (
+                <ol className="list-decimal list-inside space-y-0.5 mb-2 text-sm text-hytale-text/80">
+                  {children}
+                </ol>
+              ),
+              li: ({ children }) => <li className="text-hytale-text/80">{children}</li>,
+              code: ({ children }) => (
+                <code className="bg-hytale-accent/20 text-hytale-highlight px-1 py-0.5 rounded text-xs font-mono">
+                  {children}
+                </code>
+              ),
+              pre: ({ children }) => (
+                <pre className="bg-hytale-dark rounded p-3 overflow-x-auto mb-2 text-xs">
+                  {children}
+                </pre>
+              ),
+              hr: () => <hr className="border-hytale-accent/30 my-3" />,
+              strong: ({ children }) => (
+                <strong className="font-semibold text-hytale-text">{children}</strong>
+              ),
+              blockquote: ({ children }) => (
+                <blockquote className="border-l-4 border-hytale-highlight/50 pl-3 italic text-hytale-muted mb-2">
+                  {children}
+                </blockquote>
+              ),
+            }}
+          >
             {updateInfo.releaseNotes}
-          </p>
+          </ReactMarkdown>
         </div>
       )}
 

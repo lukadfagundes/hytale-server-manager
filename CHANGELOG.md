@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-02-16
+
 ### Added
 
 - Electron 40 + React 19 + TypeScript + Zustand 5 desktop application
@@ -23,13 +25,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Context-isolated IPC with channel whitelist in preload bridge (30 channels: 17 invoke + 13 event)
 - 7 Zustand stores: asset, config, mod, server, toast, universe, updater
 - 15 reusable React components across layout, server, players, mods, warps, setup, and updates domains
-- 4 page components: Dashboard, ModManager, Players, Warps
+- 5 page components: Dashboard, ModManager, Players, Warps, Docs
 - IPC client service with typed wrappers for all channels
 - Toast notification system with auto-dismiss
 - Tailwind CSS styling with dark theme
 - Custom app icon (circular HSM in Hytale brand colors)
 - CI/CD pipeline: GitHub Actions with typecheck, test, and cross-platform build (Linux + Windows)
 - Automated release workflow: tag-triggered build, CHANGELOG extraction, draft GitHub release creation
+- In-app Developer Documentation page with sidebar navigation, category browsing, and full markdown rendering with Mermaid diagram support (WO-019)
+- Docs utility module with build-time markdown bundling via import.meta.glob, category discovery, title/preview extraction, and Vite/Jest-compatible split architecture (WO-019)
+- MarkdownViewer component with react-markdown, remark-gfm, Hytale-themed prose styling, relative link resolution, and mermaid code block detection (WO-019)
+- MermaidDiagram component with lazy-loaded mermaid (code-split), dark theme, stale render guards, and loading/error states (WO-019)
+- DocsSidebar component with category navigation, active states, and doc count badges (WO-019)
+- Update modal release notes now render markdown and HTML content via react-markdown with rehype-raw (WO-020)
 - NSIS installer (Windows) with desktop shortcut and portable build
 - AppImage and .deb packages (Linux)
 - Pre-commit quality gate: lint-staged (Prettier + ESLint) -> typecheck -> test
@@ -60,6 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Root package.json name corrected from 'hytale-server' to 'hytale-server-manager' (WO-014)
 - Asset extraction cache validation now checks icon map file existence in addition to stamp file (WO-014)
 - Redundant disabled-mods entry removed from electron-builder files array (kept in extraFiles only) (WO-014)
+- Update modal enlarged from max-w-md to max-w-2xl and release notes area from max-h-40 to max-h-96 for better readability (WO-020)
 
 ### Performance
 
@@ -87,15 +96,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Collapsible controls: PlayerCard and LogPanel toggle buttons have aria-expanded attribute (WO-017)
 - Progress indicators: stat bars and durability bars have role="progressbar" with aria-valuenow, aria-valuemin, aria-valuemax, and aria-label (WO-017)
 - Error/warning banners: added role="alert" across ModManager, Players, Warps, and ServerSetup pages (WO-017)
+- Sidebar navigation landmarks: aria-label="Main" and aria-label="Documentation" on separate nav elements (WO-019)
+- DocsSidebar: nav aria-label="Documentation categories" with NavLink active states (WO-019)
+- Docs breadcrumb navigation: semantic nav with aria-label="Breadcrumb" and ordered list structure (WO-019)
+- MermaidDiagram: role="img" and aria-label="Diagram" on rendered SVG containers (WO-019)
+- MarkdownViewer: semantic article element wrapper for document content (WO-019)
 
 ### Tests
 
-- 26 test suites with 465 tests (up from 17 suites / 243 tests)
+- 28 test suites with 508 tests (up from 17 suites / 243 tests)
 - New test files: preload.test.ts (36 tests), file-watcher.test.ts (17 tests), updater-service.test.ts (25 tests), server-store.test.ts (18 tests), universe-store.test.ts (24 tests), updater-store.test.ts (32 tests) (WO-011)
 - Expanded ipc-handlers.test.ts with 7 new describe blocks covering server:start, server:stop, data:world-map, and all updater:* channels (WO-011)
 - Jest collectCoverageFrom expanded to include stores, components, services, and preload (WO-011)
 - Security test coverage: 4 path traversal tests for asset:// protocol, 7 input validation tests for toggleMod (WO-012)
 - Shared translation utility tests (8 tests), formatting utility tests (8 tests), ErrorBoundary tests (2 tests) (WO-016)
+- Docs utility tests: 22 tests covering extractTitle, extractPreview (with code fence tracking), getCategoryLabel, getCategories, getDocsByCategory, getDoc, and dynamic category discovery (WO-019)
+- Docs component tests: 21 tests covering file existence checks, link resolution logic (7 cases), and edge case utilities (WO-019)
 
 ### Documentation
 
@@ -110,16 +126,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Architecture
 
 - **Main Process (12 modules):** index.ts, asset-extractor.ts, file-watcher.ts, ipc-handlers.ts, mod-manager.ts, server-path.ts, server-process.ts, updater-service.ts, and 4 data readers (player, warp, world, mod)
-- **Renderer (23 files):** App.tsx, ErrorBoundary.tsx, 4 pages, 15 components, IPC client service
+- **Renderer (31 files):** App.tsx, ErrorBoundary.tsx, 5 pages, 18 components (including 3 docs components), 2 utils, IPC client service
 - **State Management (7 stores):** Zustand with cross-store toast communication pattern and granular selectors
 - **Type System (5 type files):** player.ts, server.ts, mod.ts, warp.ts, world.ts
 - **Utilities (3 files):** asset-paths.ts, formatting.ts, translation.ts
 - **Shared (2 files):** constants.ts (IPC channel name registry), translation.ts (shared utility)
 
+### Installer
+
+- Custom NSIS uninstaller script cleans up %APPDATA%\hytale-server-manager (config + asset cache) and %LOCALAPPDATA%\hytale-server-manager-updater (updater download cache) on uninstall (WO-020)
+
 ### Known Issues
 
 - Pervasive unsafe `as` casts in ipc-client.ts with no runtime validation
-- `buildResources: build` directory does not exist (no custom installer branding)
 - No integration, E2E, or visual tests
 
 ## [0.0.2] - 2026-02-14
@@ -134,6 +153,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial project scaffolding
 
-[Unreleased]: https://github.com/lukadfagundes/hytale-server-manager/compare/v0.0.2...HEAD
+[Unreleased]: https://github.com/lukadfagundes/hytale-server-manager/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/lukadfagundes/hytale-server-manager/compare/v0.0.2...v1.0.0
 [0.0.2]: https://github.com/lukadfagundes/hytale-server-manager/compare/v0.0.1...v0.0.2
 [0.0.1]: https://github.com/lukadfagundes/hytale-server-manager/releases/tag/v0.0.1
