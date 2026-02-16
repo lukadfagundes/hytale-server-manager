@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- NSIS uninstaller no longer wipes user config during auto-updates -- customUnInstall macro guarded with ${isUpdated} check so cleanup only runs on actual uninstall
+
 ## [1.0.0] - 2026-02-16
 
 ### Added
@@ -32,12 +36,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Custom app icon (circular HSM in Hytale brand colors)
 - CI/CD pipeline: GitHub Actions with typecheck, test, and cross-platform build (Linux + Windows)
 - Automated release workflow: tag-triggered build, CHANGELOG extraction, draft GitHub release creation
-- In-app Developer Documentation page with sidebar navigation, category browsing, and full markdown rendering with Mermaid diagram support (WO-019)
-- Docs utility module with build-time markdown bundling via import.meta.glob, category discovery, title/preview extraction, and Vite/Jest-compatible split architecture (WO-019)
-- MarkdownViewer component with react-markdown, remark-gfm, Hytale-themed prose styling, relative link resolution, and mermaid code block detection (WO-019)
-- MermaidDiagram component with lazy-loaded mermaid (code-split), dark theme, stale render guards, and loading/error states (WO-019)
-- DocsSidebar component with category navigation, active states, and doc count badges (WO-019)
-- Update modal release notes now render markdown and HTML content via react-markdown with rehype-raw (WO-020)
+- In-app Developer Documentation page with sidebar navigation, category browsing, and full markdown rendering with Mermaid diagram support
+- Docs utility module with build-time markdown bundling via import.meta.glob, category discovery, title/preview extraction, and Vite/Jest-compatible split architecture
+- MarkdownViewer component with react-markdown, remark-gfm, Hytale-themed prose styling, relative link resolution, and mermaid code block detection
+- MermaidDiagram component with lazy-loaded mermaid (code-split), dark theme, stale render guards, and loading/error states
+- DocsSidebar component with category navigation, active states, and doc count badges
+- Update modal release notes now render markdown and HTML content via react-markdown with rehype-raw
 - NSIS installer (Windows) with desktop shortcut and portable build
 - AppImage and .deb packages (Linux)
 - Pre-commit quality gate: lint-staged (Prettier + ESLint) -> typecheck -> test
@@ -47,80 +51,80 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-- Path traversal guard in asset:// protocol handler -- resolved paths validated against cache directory boundary (WO-012)
-- Input validation in mod-manager toggleMod -- mod names containing path separators or ".." are rejected before any filesystem operations (WO-012)
-- Developer config file (app-config.json) removed from git tracking and electron-builder files array, added to .gitignore (WO-012)
-- Release workflow shell injection fixed -- uses `--notes-file` instead of inline `--notes` expansion (WO-012)
+- Path traversal guard in asset:// protocol handler -- resolved paths validated against cache directory boundary
+- Input validation in mod-manager toggleMod -- mod names containing path separators or ".." are rejected before any filesystem operations
+- Developer config file (app-config.json) removed from git tracking and electron-builder files array, added to .gitignore
+- Release workflow shell injection fixed -- uses `--notes-file` instead of inline `--notes` expansion
 
 ### Fixed
 
-- ItemIcon fetch stampede eliminated -- icon map reload deduplicated via single in-flight promise in asset-store, components subscribe to `iconMapReady` flag instead of triggering independent fetches (WO-013)
-- Refresh listener lifecycle fixed -- universe-store and mod-store listeners initialized at app scope in App.tsx instead of Dashboard-only, ensuring live data updates on all routes (WO-013)
-- UpdateNotification close button now works in 'downloaded' state -- added missing `handleClose` branch (WO-013)
-- LogPanel smart auto-scroll -- tracks scroll position and only auto-scrolls when user is near bottom, preserving ability to read history (WO-013)
-- Duplicate type definitions removed -- server-store and mod-store now import canonical types from types/ directory; server-store LogEntry.stream narrowed to 'stdout' | 'stderr' (WO-013)
-- getWarps response shape normalized -- handles both singular `error` and plural `errors` for forward compatibility (WO-013)
-- Log entries use stable unique IDs instead of array indices, preventing React DOM reuse glitches when buffer rotates (WO-013)
-- Auto-update publish configuration fixed -- electron-builder.yml and dev-app-update.yml repo changed from 'hytale-server' to 'hytale-server-manager' (WO-014)
-- Release workflow CHANGELOG URL fixed to point to correct repository (WO-014)
-- CI npm cache-dependency-path updated to include both root and app lockfiles for proper cache invalidation (WO-014)
-- Linux auto-update manifest (latest-linux.yml) generation added to release workflow (WO-014)
-- Root package.json name corrected from 'hytale-server' to 'hytale-server-manager' (WO-014)
-- Asset extraction cache validation now checks icon map file existence in addition to stamp file (WO-014)
-- Redundant disabled-mods entry removed from electron-builder files array (kept in extraFiles only) (WO-014)
-- Update modal enlarged from max-w-md to max-w-2xl and release notes area from max-h-40 to max-h-96 for better readability (WO-020)
+- ItemIcon fetch stampede eliminated -- icon map reload deduplicated via single in-flight promise in asset-store, components subscribe to `iconMapReady` flag instead of triggering independent fetches
+- Refresh listener lifecycle fixed -- universe-store and mod-store listeners initialized at app scope in App.tsx instead of Dashboard-only, ensuring live data updates on all routes
+- UpdateNotification close button now works in 'downloaded' state -- added missing `handleClose` branch
+- LogPanel smart auto-scroll -- tracks scroll position and only auto-scrolls when user is near bottom, preserving ability to read history
+- Duplicate type definitions removed -- server-store and mod-store now import canonical types from types/ directory; server-store LogEntry.stream narrowed to 'stdout' | 'stderr'
+- getWarps response shape normalized -- handles both singular `error` and plural `errors` for forward compatibility
+- Log entries use stable unique IDs instead of array indices, preventing React DOM reuse glitches when buffer rotates
+- Auto-update publish configuration fixed -- electron-builder.yml and dev-app-update.yml repo changed from 'hytale-server' to 'hytale-server-manager'
+- Release workflow CHANGELOG URL fixed to point to correct repository
+- CI npm cache-dependency-path updated to include both root and app lockfiles for proper cache invalidation
+- Linux auto-update manifest (latest-linux.yml) generation added to release workflow
+- Root package.json name corrected from 'hytale-server' to 'hytale-server-manager'
+- Asset extraction cache validation now checks icon map file existence in addition to stamp file
+- Redundant disabled-mods entry removed from electron-builder files array (kept in extraFiles only)
+- Update modal enlarged from max-w-md to max-w-2xl and release notes area from max-h-40 to max-h-96 for better readability
 
 ### Performance
 
-- Asset extraction converted to async file I/O -- fs.promises.writeFile and fs.promises.mkdir replace synchronous calls, unblocking the main process event loop (WO-015)
-- Mod reader converted to async -- getDirSizeAsync uses fs.promises.readdir and fs.promises.stat, eliminating event loop blocking for large mod directories (WO-015)
-- Granular Zustand selectors added to LogPanel, ServerToggle, and ModManager -- components only re-render when their specific state slices change (WO-015)
-- durabilityPercent computed once per item in EquipmentTree and InventoryGrid, eliminating redundant function calls (WO-015)
+- Asset extraction converted to async file I/O -- fs.promises.writeFile and fs.promises.mkdir replace synchronous calls, unblocking the main process event loop
+- Mod reader converted to async -- getDirSizeAsync uses fs.promises.readdir and fs.promises.stat, eliminating event loop blocking for large mod directories
+- Granular Zustand selectors added to LogPanel, ServerToggle, and ModManager -- components only re-render when their specific state slices change
+- durabilityPercent computed once per item in EquipmentTree and InventoryGrid, eliminating redundant function calls
 
 ### Code Quality
 
-- Shared formatTranslationKey utility created in shared/translation.ts -- consolidated from 3 divergent copies across player-reader, world-reader, and renderer utils (WO-016)
-- formatBytes and formatSpeed consolidated in utils/formatting.ts with GB tier support -- removed duplicate from UpdateNotification.tsx (WO-016)
-- Dead components removed: ArmorDisplay.tsx and StatsBar.tsx (superseded by EquipmentTree inline code) (WO-016)
-- Dead exports removed: readPlayerMemories, getServerConfig, SERVER_DIR, DISABLED_MODS_DIR (WO-016)
-- file-watcher.ts watcher variable typed as FSWatcher | null instead of any (WO-016)
-- React ErrorBoundary component added and wrapped around app root in App.tsx -- unhandled render errors now show a recovery UI instead of white screen (WO-016)
-- updater-service.ts refactored to broadcast to all windows via BrowserWindow.getAllWindows() instead of captured single reference (WO-016)
-- Graceful Windows server shutdown -- taskkill without /F attempted first, escalating to force-kill after 15s timeout (WO-016)
+- Shared formatTranslationKey utility created in shared/translation.ts -- consolidated from 3 divergent copies across player-reader, world-reader, and renderer utils
+- formatBytes and formatSpeed consolidated in utils/formatting.ts with GB tier support -- removed duplicate from UpdateNotification.tsx
+- Dead components removed: ArmorDisplay.tsx and StatsBar.tsx (superseded by EquipmentTree inline code)
+- Dead exports removed: readPlayerMemories, getServerConfig, SERVER_DIR, DISABLED_MODS_DIR
+- file-watcher.ts watcher variable typed as FSWatcher | null instead of any
+- React ErrorBoundary component added and wrapped around app root in App.tsx -- unhandled render errors now show a recovery UI instead of white screen
+- updater-service.ts refactored to broadcast to all windows via BrowserWindow.getAllWindows() instead of captured single reference
+- Graceful Windows server shutdown -- taskkill without /F attempted first, escalating to force-kill after 15s timeout 
 
 ### Accessibility
 
-- UpdateNotification modal: added role="dialog", aria-modal="true", aria-labelledby, and focus trap preventing keyboard users from tabbing behind the modal (WO-017)
-- ToastContainer: added aria-live="polite" and role="status" with always-render pattern for live region establishment; individual toasts have role="alert" (WO-017)
-- Keyboard tooltip access: InventoryGrid and EquipmentTree item slots now have tabIndex={0}, onFocus/onBlur handlers, and aria-label for screen readers (WO-017)
-- Collapsible controls: PlayerCard and LogPanel toggle buttons have aria-expanded attribute (WO-017)
-- Progress indicators: stat bars and durability bars have role="progressbar" with aria-valuenow, aria-valuemin, aria-valuemax, and aria-label (WO-017)
-- Error/warning banners: added role="alert" across ModManager, Players, Warps, and ServerSetup pages (WO-017)
-- Sidebar navigation landmarks: aria-label="Main" and aria-label="Documentation" on separate nav elements (WO-019)
-- DocsSidebar: nav aria-label="Documentation categories" with NavLink active states (WO-019)
-- Docs breadcrumb navigation: semantic nav with aria-label="Breadcrumb" and ordered list structure (WO-019)
-- MermaidDiagram: role="img" and aria-label="Diagram" on rendered SVG containers (WO-019)
-- MarkdownViewer: semantic article element wrapper for document content (WO-019)
+- UpdateNotification modal: added role="dialog", aria-modal="true", aria-labelledby, and focus trap preventing keyboard users from tabbing behind the modal
+- ToastContainer: added aria-live="polite" and role="status" with always-render pattern for live region establishment; individual toasts have role="alert"
+- Keyboard tooltip access: InventoryGrid and EquipmentTree item slots now have tabIndex={0}, onFocus/onBlur handlers, and aria-label for screen readers
+- Collapsible controls: PlayerCard and LogPanel toggle buttons have aria-expanded attribute
+- Progress indicators: stat bars and durability bars have role="progressbar" with aria-valuenow, aria-valuemin, aria-valuemax, and aria-label
+- Error/warning banners: added role="alert" across ModManager, Players, Warps, and ServerSetup pages
+- Sidebar navigation landmarks: aria-label="Main" and aria-label="Documentation" on separate nav elements
+- DocsSidebar: nav aria-label="Documentation categories" with NavLink active states
+- Docs breadcrumb navigation: semantic nav with aria-label="Breadcrumb" and ordered list structure
+- MermaidDiagram: role="img" and aria-label="Diagram" on rendered SVG containers
+- MarkdownViewer: semantic article element wrapper for document content
 
 ### Tests
 
 - 28 test suites with 508 tests (up from 17 suites / 243 tests)
-- New test files: preload.test.ts (36 tests), file-watcher.test.ts (17 tests), updater-service.test.ts (25 tests), server-store.test.ts (18 tests), universe-store.test.ts (24 tests), updater-store.test.ts (32 tests) (WO-011)
-- Expanded ipc-handlers.test.ts with 7 new describe blocks covering server:start, server:stop, data:world-map, and all updater:* channels (WO-011)
-- Jest collectCoverageFrom expanded to include stores, components, services, and preload (WO-011)
-- Security test coverage: 4 path traversal tests for asset:// protocol, 7 input validation tests for toggleMod (WO-012)
-- Shared translation utility tests (8 tests), formatting utility tests (8 tests), ErrorBoundary tests (2 tests) (WO-016)
-- Docs utility tests: 22 tests covering extractTitle, extractPreview (with code fence tracking), getCategoryLabel, getCategories, getDocsByCategory, getDoc, and dynamic category discovery (WO-019)
-- Docs component tests: 21 tests covering file existence checks, link resolution logic (7 cases), and edge case utilities (WO-019)
+- New test files: preload.test.ts (36 tests), file-watcher.test.ts (17 tests), updater-service.test.ts (25 tests), server-store.test.ts (18 tests), universe-store.test.ts (24 tests), updater-store.test.ts (32 tests)
+- Expanded ipc-handlers.test.ts with 7 new describe blocks covering server:start, server:stop, data:world-map, and all updater:* channels
+- Jest collectCoverageFrom expanded to include stores, components, services, and preload
+- Security test coverage: 4 path traversal tests for asset:// protocol, 7 input validation tests for toggleMod
+- Shared translation utility tests (8 tests), formatting utility tests (8 tests), ErrorBoundary tests (2 tests)
+- Docs utility tests: 22 tests covering extractTitle, extractPreview (with code fence tracking), getCategoryLabel, getCategories, getDocsByCategory, getDoc, and dynamic category discovery
+- Docs component tests: 21 tests covering file existence checks, link resolution logic (7 cases), and edge case utilities
 
 ### Documentation
 
-- Node.js prerequisites updated from 18+ to 22+ in README.md and getting-started.md (WO-018)
-- installation.md linked from docs/README.md and root README.md navigation (WO-018)
-- packaging.md Release Workflow section rewritten to document automated release.yml CI pipeline (WO-018)
-- IPC contract consistently documented as 4-file update across CONTRIBUTING.md and ipc-channel-map.md (WO-018)
-- CONTRIBUTING.md branch references updated from dev to main (WO-018)
-- server-hosting.md Windows section fixed to use PowerShell syntax instead of bash (WO-018)
+- Node.js prerequisites updated from 18+ to 22+ in README.md and getting-started.md
+- installation.md linked from docs/README.md and root README.md navigation
+- packaging.md Release Workflow section rewritten to document automated release.yml CI pipeline
+- IPC contract consistently documented as 4-file update across CONTRIBUTING.md and ipc-channel-map.md
+- CONTRIBUTING.md branch references updated from dev to main
+- server-hosting.md Windows section fixed to use PowerShell syntax instead of bash
 - New module documentation: docs/modules/ with 6 detailed module docs (asset-extractor, file-watcher, ipc-client, server-process, server-store, universe-store)
 
 ### Architecture
@@ -134,7 +138,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Installer
 
-- Custom NSIS uninstaller script cleans up %APPDATA%\hytale-server-manager (config + asset cache) and %LOCALAPPDATA%\hytale-server-manager-updater (updater download cache) on uninstall (WO-020)
+- Custom NSIS uninstaller script cleans up %APPDATA%\hytale-server-manager (config + asset cache) and %LOCALAPPDATA%\hytale-server-manager-updater (updater download cache) on uninstall
 
 ## [0.0.2] - 2026-02-14
 
@@ -142,7 +146,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Testing Workflow
 
-## [0.0.1] - 2026-02-14
+## [0.0.1] - 
 
 ### Added
 
