@@ -6,9 +6,6 @@ directories:
 files:
   - dist/**/*
   - package.json
-extraFiles:
-  - from: disabled-mods
-    to: disabled-mods
 publish:
   provider: github
   owner: lukadfagundes
